@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # coding:utf-8
-import argparse
 
-parser = argparse.ArgumentParser()
-args = parser.parse_args()
+from lib.core import ArgumentParser, Controller
+
+
+class Dinlas:
+    def __init__(self):
+        self.args = ArgumentParser().parse()
+        self.controller = Controller(self.args)
+
+
+if __name__ == '__main__':
+    Dinlas()
