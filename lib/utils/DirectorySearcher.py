@@ -1,14 +1,14 @@
 # coding:utf-8
 
 
-class SQLInjector:
+class DirectorySearcher:
     def __init__(self, **kwargs):
         self.args = kwargs
 
     @staticmethod
     def meta():
         return {
-            'name': 'SQL Injector for all',
+            'name': 'Directory Searcher for all',
             'version': '1.0'
         }
 
