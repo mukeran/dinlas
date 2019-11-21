@@ -16,14 +16,14 @@ But you have to pay attention that this is a project for a course.
 ├── dinlas.py - Program Entry
 ├── lib
 │   ├── core - Core Classes
-│   │   ├── ArgumentParser.py - Command Line Parser
-│   │   ├── Controller.py - Main Workflow
+│   │   ├── ArgumentParser.py - Command line parser
+│   │   ├── Controller.py - Main controller
 │   │   ├── __init__.py
-│   │   ├── Logger.py - Console Logger
-│   │   ├── ModuleLoader.py - Module Loader
-│   │   └── Reporter.py - Reporter Generator
-│   ├── modules - Scan Modules
-│   └── utils - Program Utils
+│   │   ├── Logger.py - Console logger
+│   │   ├── ModuleLoader.py - Module loader
+│   │   └── Reporter.py - Reporter generator
+│   ├── extensions - Scan extensions
+│   └── utils - Program utils or common modules
 ├── README.md
 └── requirements.txt
 ```
