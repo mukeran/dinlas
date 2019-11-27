@@ -1,14 +1,14 @@
 # coding:utf-8
 
 
-class RequestFinder:
+class CSRFDetector:
     def __init__(self, **kwargs):
         self.args = kwargs
 
     @staticmethod
     def meta():
         return {
-            'name': 'Request Finder for all',
+            'name': 'CSRF Detector for all',
             'version': '1.0'
         }
 

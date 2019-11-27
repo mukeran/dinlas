@@ -8,10 +8,10 @@ class Dinlas:
     def __init__(self):
         self.parser = ArgumentParser()
         self.args = self.parser.parse()
-        if not self.args.__contains__('action'):
+        if 'action' not in self.args:
             self.parser.print_help()
             exit(1)
-        self.controller = Controller(**self.args)
+        self.controller = Controller(self.parser, **self.args)
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@
 import time
 from urllib import parse
 
-from lib.utils.SQLInjector.SQLMap import SQLMap
+from .SQLMap import SQLMap
 from lib.core.Logger import Logger
 
 DEFAULT_LEVEL = 1
@@ -105,6 +105,7 @@ class SQLInjector:
         if form['content-type'] == 'application/x-www-form-urlencoded':
             data = {field['name']:value(field) for field in form['fields'].values() if value(field)}
             if option['method'] == 'GET':
+
                 option['url'] += '?' + parse.urlencode(data)
             else:
                 option['data'] = parse.urlencode(data)

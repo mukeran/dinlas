@@ -1,16 +1,16 @@
 # coding: utf-8
 
 
-class PHP:
+class PythonStatic:
     def __init__(self):
         pass
 
     @staticmethod
     def meta():
         return {
-            'name': 'PHP',
-            'command': 'php',
-            'description': 'Extension for PHP websites',
+            'name': 'Python static websites',
+            'command': 'python-static',
+            'description': 'Extension for Python static websites',
             'version': 'dev'
         }
 
