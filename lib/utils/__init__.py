@@ -27,8 +27,9 @@ def execute(command, cwd=None, timeout=None, background=False):
     command_str = ''
     for i in command:
         command_str += ' ' + i
-    command_str = "'" + command_str.replace("'", "\\'")
-    command_str = ['bash -c {}'.format(command_str)]
+    command_str = "'" + command_str.replace("'", "\\'") + "'"
+    # command_str = ['bash -c {}'.format(command_str)]
+    command_str = ['gnome-terminal -e {}'.format(command_str)]
     shellmode = True
     Logger.debug("command: {}; cwd: {}; timeout: {}; shellmode: {}".format(
         command_str, cwd, timeout, shellmode))

@@ -1,5 +1,10 @@
 # coding:utf-8
 
+if __name__ == '__main__':
+    import sqlmap.sqlmapapi
+    sqlmap.sqlmapapi.main()
+    exit(0)
+
 import urllib
 import urllib.request
 import urllib.error
@@ -45,10 +50,10 @@ class SQLMap:
 
         def background():
             if self.username or self.password:
-                sta = execute(['python2.7', 'sqlmapapi.py', '-s', '--username=%s'%self.username, '--password=%s'%self.password], 'sqlmap/', None,
+                sta = execute(['python', 'lib/utils/SQLInjector/SQLMap.py', '-s', '--username=%s'%self.username, '--password=%s'%self.password], None, None,
                               None)
             else:
-                sta = execute(['python2.7', 'sqlmapapi.py', '-s'], 'sqlmap/', None,
+                sta = execute(['python', 'lib/utils/SQLInjector/SQLMap.py', '-s'], None, None,
                           None)
 
             if 'Address already in use' in sta:
@@ -69,7 +74,7 @@ class SQLMap:
     def is_sqlmapapi_launched(self):
         """ return True if sqlmapapi is launched, otherwise False """
         launched = False
-        launched = 'sqlmapapi.py' in str({p.pid: p.info for p in
+        launched = 'SQLMap.py' in str({p.pid: p.info for p in
                                           psutil.process_iter(attrs=['cmdline'])})
 
         return launched
@@ -88,6 +93,7 @@ class SQLMap:
             data = None
             if options is not None:
                 data = jsonize(options)
+                data = bytes(data, 'utf8')
             headers = {"Content-Type": "application/json"}
 
             if self.username or self.password:
@@ -145,7 +151,8 @@ class SQLMap:
         return res
 
     def scan(self, options):
-        return self._scan_start(self._new_task_id(), options)
+        taskid = self._new_task_id()
+        return self._scan_start(taskid, options), taskid
 
     def admin(self, command):
         if not command in ('list', 'flush'):
@@ -182,8 +189,6 @@ class SQLMap:
         if not res["success"]:
             Logger.error("Failed to get option for task %s" % taskid)
         return res
-
-
 
     def exec(self):
         pass
