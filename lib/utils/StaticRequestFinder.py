@@ -7,7 +7,8 @@ from requests_html import HTMLSession
 
 
 class StaticRequestFinder:
-    def __init__(self, **kwargs):
+    def __init__(self, results, **kwargs):
+        self.results = results
         self.args = kwargs
         self.requests = []
 
@@ -18,7 +19,7 @@ class StaticRequestFinder:
             'version': '1.0'
         }
 
-    def exec(self, results):
+    def exec(self):
         visited = set()
         session = HTMLSession()
         queue = SimpleQueue()
@@ -110,4 +111,4 @@ class StaticRequestFinder:
                         'values': values
                     }
                 self.requests.append(request)
-        results['requests'] = self.requests
+        self.results['requests'] = self.requests

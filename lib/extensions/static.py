@@ -28,6 +28,6 @@ class Static:
         return [StaticRequestFinder, SQLInjector, WeakPasswordTester]
 
     def exec(self):
-        StaticRequestFinder(**self.args).exec(self.results)
-        SQLInjector(**self.args).exec()
-        WeakPasswordTester(**self.args).exec(self.results)
+        StaticRequestFinder(self.results, **self.args).exec()
+        SQLInjector(self.results, **self.args).exec()
+        WeakPasswordTester(self.results, **self.args).exec()
