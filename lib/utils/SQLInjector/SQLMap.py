@@ -15,6 +15,8 @@ if __name__ == '__main__':
     process.start()
     exit(0)
 
+
+import sys
 import urllib
 import urllib.request
 import urllib.error
@@ -32,7 +34,7 @@ RESTAPI_DEFAULT_ADDRESS = "127.0.0.1"
 
 # Default REST-JSON API server listen port
 RESTAPI_DEFAULT_PORT = 8775
-
+RESTAPI_DEFAULT_ADAPTER = "wsgiref"
 
 class SQLMap:
     def __init__(self, host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username = '', password = '', **kwargs):
@@ -55,23 +57,13 @@ class SQLMap:
             'version': '1.0'
         }
 
-    # TODO 找端口号
+
     def sqlmapapi_launch(self):
         """ launches sqlmapapi in another process and make sure it launched """
 
         def background():
-            if self.username or self.password:
-                sta = execute(['python', 'lib/utils/SQLInjector/SQLMap.py', '-s', '--username=%s'%self.username, '--password=%s'%self.password], None, None,
-                              None)
-            else:
-                sta = execute(['python', 'lib/utils/SQLInjector/SQLMap.py', '-s'], None, None,
-                          None)
-
-            if 'Address already in use' in sta:
-                Logger.critical('sqlmapapi.py said: {}'.format(sta))
-
-            if 'bash' in sta:
-                Logger.critical('bash error: {}'.format(sta))
+            from sqlmap.lib.utils.api import server
+            server(RESTAPI_DEFAULT_ADDRESS, RESTAPI_DEFAULT_PORT)#, adapter = RESTAPI_DEFAULT_ADAPTER)
 
         self.process = Process(target=background)
         self.process.start()
@@ -271,22 +263,3 @@ def dejsonize(data):
 
     return json.loads(data)
 
-
-# TODO 待理解修改
-def execute(command, cwd=None, timeout=None, background=False):
-    command_str = ''
-    for i in command:
-        command_str += ' ' + i
-    command_str = "'" + command_str.replace("'", "\\'") + "'"
-    # command_str = ['bash -c {}'.format(command_str)]
-    command_str = ['gnome-terminal -e {}'.format(command_str)]
-    shellmode = True
-    Logger.debug("command: {}; cwd: {}; timeout: {}; shellmode: {}".format(
-        command_str, cwd, timeout, shellmode))
-    result = subprocess.run(
-        command_str,
-        stdout=subprocess.PIPE,
-        cwd=cwd,
-        timeout=timeout,
-        shell=shellmode)
-    return result.stdout.decode('utf-8')

@@ -10,6 +10,10 @@ DEFAULT_LEVEL = 1
 
 class SQLInjector:
     def __init__(self, results, reports, **kwargs):
+        report = {'title': 'SQL Injection',
+                  'overview': 'SQL injection vulnerabilities allow an attacker to alter the queries executed on the backend database. An attacker may then be able to extract or modify informations stored in the database or even escalate his privileges on the system.',
+                  'entries': [], 'header': ['URL', 'method', 'Parameter', 'Type', 'Payload']}
+        self.sql_report = report
         self.args = kwargs
         self.reports = reports
         self.results = results
@@ -35,15 +39,15 @@ class SQLInjector:
         """
         for task in self.running:
             res = self.sqlmap.task("status", task["taskid"])
-            if (res['status'] != 'running'):
-                Logger.debug("[scan status: {}]: ID: {}".
+            if res['status'] != 'running':
+                Logger.info("[scan status: {}]: ID: {}".
                           format(res["status"], task["taskid"]))
                 task['status'] = res
                 task['log'] = self.sqlmap.task("log", task["taskid"])
                 task['data'] = self.sqlmap.task("data", task["taskid"])
                 Logger.debug(task["url"])
                 self.parse_task(task)
-                Logger.debug(res)
+                # Logger.debug(res)
                 task['log'] = res
                 self.running.remove(task)
 
@@ -51,8 +55,10 @@ class SQLInjector:
         while self.running:
             self.result()
             Logger.info("{} task still running".format(len(self.running)))
-            Logger.debug(self.running)
+            # Logger.debug(self.running)
             time.sleep(3)
+        self.sql_report['overview'] = 'Found {} Injections. <br>'.format(len(self.sql_report['entries'])) + self.sql_report['overview']
+        self.reports.append(self.sql_report)
         Logger.info("SQLMap Tasks are all finished !")
 
     def parse_task(self, task):
@@ -61,8 +67,6 @@ class SQLInjector:
             Logger.critical('SQL injection found!')
             Logger.info(task['data'])
             datas = task['data']['data']
-            report = {'title': 'SQL Injection','overview':'SQL injection vulnerabilities allow an attacker to alter the queries executed on the backend database. An attacker may then be able to extract or modify informations stored in the database or even escalate his privileges on the system.'}
-            report['header'] = ['URL', 'method', 'Parameter', 'Type', 'Payload']
             entries = []
             for ent in datas:
                 if ent['type'] == CONTENT_TYPE.TARGET:
@@ -77,9 +81,8 @@ class SQLInjector:
                             title = d['title']
                             payload = d['payload']
                             entries.append([url, method, parameter, title, payload])
-            report['entries'] = entries
-            Logger.debug(report)
-            self.reports.append(report)
+            self.sql_report['entries'] += entries
+
 
         rep = "%s" % task["log"]
         if 'CRITICAL' in rep:
@@ -143,10 +146,11 @@ class SQLInjector:
 
     def exec(self):
         self.launch()
-        Logger.debug('requests: {}'.format(self.results))
+        # Logger.debug('requests: {}'.format(self.results))
         for i in self.results['requests']:
             self.add(i)
         self.wait_result()
+        # Logger.debug(report)
 
 
 '''
