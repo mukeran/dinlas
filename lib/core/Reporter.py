@@ -17,6 +17,7 @@ class Reporter:
 
     def generate(self):
         generate_time = time.localtime()
+        print(self.reports)
         template = self.jinja.get_template('default.jinja2')
         filename = 'report-{}-{}.html'.format(time.strftime('%Y-%m-%d', generate_time),
                                               int(time.time()))
