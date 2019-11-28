@@ -24,6 +24,9 @@ class Static:
         parser.add_argument('-C', '--cookie', default='', help='set cookies')
         parser.add_argument('-E', '--exclude', default=[], nargs='+', help='exclude paths')
         parser.add_argument('--max-page-count', default=50, type=int, help='max crawl page count')
+        parser.add_argument('-L', '--limit', default=100, type=int, help='max test password count')
+        parser.add_argument('--random', action='store_true', help='if randomly test password or not')
+        parser.add_argument('--username', help='set test username')
 
     @staticmethod
     def modules():

@@ -11,12 +11,12 @@ class Dictionary:
     @staticmethod
     def preset(root, name):
         with open('{}/dictionary/{}.txt'.format(root, name)) as f:
-            return Dictionary(f.readlines())
+            return Dictionary(f.read().splitlines())
 
     @staticmethod
     def custom(path):
         with open(path) as f:
-            return Dictionary(f.readlines())
+            return Dictionary(f.read().splitlines())
 
     def random(self, limit):
         for i in range(0, limit):

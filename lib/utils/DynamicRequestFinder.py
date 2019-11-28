@@ -37,7 +37,7 @@ class DynamicRequestFinder:
     def meta():
         return {
             'name': 'RequestFinder for dynamic websites',
-            'version': '1.0'
+            'version': 'dev'
         }
 
     def get_pages(self):

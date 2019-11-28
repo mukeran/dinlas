@@ -1,8 +1,9 @@
 # coding:utf-8
 
 import re
+import random
 
-from lib.core import Dictionary
+from lib.core.Dictionary import Dictionary
 from lib.exceptions import NoRequestsException
 
 import requests
@@ -28,7 +29,7 @@ class WeakPasswordTester:
         for request in self.results['requests']:
             if request['content-type'] == 'text/plain':
                 continue
-            regex = ['log.*in', 'sign.*in', 'opt.*in']
+            regex = ['.*log.*in.*', '.*sign.*in.*', '.*opt.*in.*', '.*index.*']
             flag = False
             for r in regex:
                 if re.match(r, request['url']):
@@ -66,16 +67,18 @@ class WeakPasswordTester:
                                     yield (_username, _password)
                     else:
                         if limit == 0:
-                            limit = max(len(dict_username.fields), len(dict_password.fields))
+                            limit = max(len(dict_username.entries), len(dict_password.entries))
                         if self.args['username'] is not None:
-                            for _password in dict_password.random(limit):
+                            for _password in dict_password.entries[:min(limit, len(dict_username.entries))]:
                                 yield (self.args['username'], _password)
                         else:
-                            for _username in dict_username.fields[:min(limit, len(dict_username.fields))]:
-                                for _password in dict_password.fields[:min(limit, len(dict_password.fields))]:
+                            for _username in dict_username.entries[:min(limit, len(dict_username.entries))]:
+                                for _password in dict_password.entries[:min(limit, len(dict_password.entries))]:
                                     yield (_username, _password)
+                    yield (hex(random.randrange(1e10, 1e20)), hex(random.randrange(1e10, 1e20)))
 
-                result = []
+                status = []
+                result2xx = result3xx = 0
                 for username, password in get_pair():
                     params = {}
                     r = None
@@ -99,30 +102,59 @@ class WeakPasswordTester:
                         elif request['content-type'] == 'multipart/form-data':
                             r = requests.post(request['url'], files=params)
                     if r.status_code == 200:
-                        result.append({
+                        status.append({
                             'username': username,
                             'password': password,
                             'status_code': 200,
                             'content': r.content
                         })
+                        result2xx += 1
                     elif r.status_code in [301, 302, 306]:
-                        result.append({
+                        location = r.headers['Location'] if 'Location' in r.headers else\
+                            (r.headers['location'] if 'location' in r.headers else None)
+                        status.append({
                             'username': username,
                             'password': password,
                             'status_code': r.status_code,
-                            'location': r.headers['Location'] if 'Location' in r.headers
-                            else (r.headers['location'] if 'location' in r.headers else None)
+                            'location': location
                         })
-                result_set = set(result)
-                if len(result_set) == len(result) or len(result_set) == 1:
-                    pass
+                        result3xx += 1
+                last = status[-1]
+                status.pop()
+                if last['status_code'] == 200:
+                    if result3xx > 0:
+                        for stat in status:
+                            if stat['status_code'] in [301, 302, 306]:
+                                self.results['weak_passwords'].append({
+                                    'url': request['url'],
+                                    'username': stat['username'],
+                                    'password': stat['password']
+                                })
+                    else:
+                        for stat in status:
+                            if stat['content'] != last['content']:
+                                self.results['weak_passwords'].append({
+                                    'url': request['url'],
+                                    'username': stat['username'],
+                                    'password': stat['password']
+                                })
                 else:
-                    for r in result_set:
-                        self.results['weak_passwords'].append({
-                            'url': request['url'],
-                            'username': r['username'],
-                            'password': r['password']
-                        })
+                    if result2xx > 0:
+                        for stat in status:
+                            if stat['status_code'] == 200:
+                                self.results['weak_passwords'].append({
+                                    'url': request['url'],
+                                    'username': stat['username'],
+                                    'password': stat['password']
+                                })
+                    else:
+                        for stat in status:
+                            if stat['location'] != last['location']:
+                                self.results['weak_passwords'].append({
+                                    'url': request['url'],
+                                    'username': stat['username'],
+                                    'password': stat['password']
+                                })
         self.reports.append({
             'title': 'Weak Passwords',
             'overview': 'Found {} weak password pairs'.format(len(self.results['weak_passwords'])),

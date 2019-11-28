@@ -13,6 +13,8 @@ class StaticRequestFinder:
         self.requests = []
         self.cookies = {}
         for entry in self.args['cookie'].split(';'):
+            if entry.find('=') == -1:
+                continue
             key, value = entry.strip().split('=', 1)
             self.cookies[key] = value
 
