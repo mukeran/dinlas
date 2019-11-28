@@ -1,8 +1,8 @@
 # coding:utf-8
 
-import requests
 from urllib.parse import urljoin
 
+import requests
 from requests.exceptions import ConnectTimeout
 from requests.exceptions import InvalidSchema
 
@@ -21,7 +21,7 @@ class DirectorySearcher:
         }
 
     def exec(self):
-        with open('../../dictionaries/dic.txt') as f:
+        with open('../../dictionary/common_directory.txt') as f:
             lines = f.readlines()
             count = 0
 
