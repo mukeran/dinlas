@@ -3,14 +3,16 @@
 from urllib.parse import urljoin
 
 import requests
-from requests.exceptions import ConnectTimeout
-from requests.exceptions import InvalidSchema
+from requests.exceptions import ConnectTimeout, InvalidSchema, ConnectionError
+
+from lib.core.Dictionary import Dictionary
 
 
 class DirectorySearcher:
-    def __init__(self, results, **kwargs):
+    def __init__(self, results, reports, **kwargs):
         self.args = kwargs
         self.results = results
+        self.reports = reports
         self.directories = []
 
     @staticmethod
@@ -21,22 +23,36 @@ class DirectorySearcher:
         }
 
     def exec(self):
-        with open('../../dictionary/common_directory.txt') as f:
-            lines = f.readlines()
-            count = 0
+        dictionary = Dictionary.preset(self.args['root'], 'common_directory')
+        directory_search_limit = self.args['directory_search_limit']
 
-            for line in lines:
-                url = urljoin(self.args['url'], line)
-                try:
-                    r = requests.get(url, timeout=5)
-                except ConnectTimeout:
-                    continue
-                except InvalidSchema:
-                    continue
-                if r.status_code in [200, 201, 301, 306, 401, 403]:
-                    self.directories.append({
-                        'path': line,
-                        'status_code': r.status_code
-                    })
+        def entries():
+            if self.args['directory_search_random']:
+                for entry in dictionary.random(directory_search_limit):
+                    yield entry
+            else:
+                for entry in dictionary.entries[:directory_search_limit]:
+                    yield entry
+
+        for line in entries():
+            url = urljoin(self.args['url'], line)
+            try:
+                r = requests.get(url, timeout=5)
+            except ConnectTimeout:
+                continue
+            except InvalidSchema:
+                continue
+            except ConnectionError:
+                continue
+            if r.status_code in [200, 201, 301, 306, 401, 403]:
+                self.directories.append({
+                    'path': line,
+                    'status_code': r.status_code
+                })
         self.results['directories'] = self.directories
-
+        self.reports.append({
+            'title': 'Hidden web files/paths',
+            'overview': 'Found {} potential hidden web files/paths'.format(len(self.directories)),
+            'header': ['Path', 'Status Code'],
+            'entries': list(map(lambda x: [x['path'], x['status_code']], self.directories))
+        })
