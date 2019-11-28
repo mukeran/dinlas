@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 from random import randrange
 
 
@@ -8,8 +9,8 @@ class Dictionary:
         self.entries = entries
 
     @staticmethod
-    def preset(name):
-        with open('../../dictionary/{}.txt'.format(name)) as f:
+    def preset(root, name):
+        with open('{}/dictionary/{}.txt'.format(root, name)) as f:
             return Dictionary(f.readlines())
 
     @staticmethod

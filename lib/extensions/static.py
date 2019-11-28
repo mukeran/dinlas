@@ -7,6 +7,7 @@ class Static:
     def __init__(self, **kwargs):
         self.args = kwargs
         self.results = {}
+        self.reports = []
 
     @staticmethod
     def meta():
@@ -19,9 +20,10 @@ class Static:
 
     @staticmethod
     def register_command(parser):
-        parser.add_argument('url', help='The destination url to scan')
-        parser.add_argument('-E', '--exclude', default=[], nargs='+', help='Exclude paths')
-        parser.add_argument('--max-page-count', default=50, type=int, help='Max crawl page count')
+        parser.add_argument('url', help='the destination url to scan')
+        parser.add_argument('-C', '--cookie', default='', help='set cookies')
+        parser.add_argument('-E', '--exclude', default=[], nargs='+', help='exclude paths')
+        parser.add_argument('--max-page-count', default=50, type=int, help='max crawl page count')
 
     @staticmethod
     def modules():
@@ -29,5 +31,5 @@ class Static:
 
     def exec(self):
         StaticRequestFinder(self.results, **self.args).exec()
-        SQLInjector(self.results, **self.args).exec()
-        WeakPasswordTester(self.results, **self.args).exec()
+        SQLInjector(self.results, self.reports, **self.args).exec()
+        WeakPasswordTester(self.results, self.reports, **self.args).exec()
