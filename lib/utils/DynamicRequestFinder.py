@@ -10,7 +10,8 @@ from browsermobproxy import Server
 
 
 class DynamicRequestFinder:
-    def __init__(self, **kwargs):
+    def __init__(self, results, **kwargs):
+        self.results = results
         self.args = kwargs
         # Create proxy server
         self.proxy_server = Server(self.args['browsermobproxy'])

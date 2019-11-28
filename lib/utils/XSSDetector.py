@@ -2,7 +2,8 @@
 
 
 class XSSDetector:
-    def __init__(self, **kwargs):
+    def __init__(self, results, **kwargs):
+        self.results = results
         self.args = kwargs
 
     @staticmethod

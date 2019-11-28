@@ -15,7 +15,7 @@ class Controller:
             if 'extension' not in self.args:
                 parser.subparsers['start']['parser'].print_help()
                 exit(1)
-            extension = self.args['extension']()
+            extension = self.args['extension'](**self.args)
             extension.exec()
         elif self.args['action'] == 'extensions':
             print('The installed extensions are followings:')

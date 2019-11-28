@@ -1,8 +1,18 @@
 # coding:utf-8
-
 if __name__ == '__main__':
     import sqlmap.sqlmapapi
     sqlmap.sqlmapapi.main()
+    exit(0)
+
+from multiprocessing import Process
+if __name__ == '__main__':
+    def sqlmapapi():
+        import sqlmap.sqlmapapi
+        sqlmap.sqlmapapi.main()
+
+
+    process = Process(target=sqlmapapi)
+    process.start()
     exit(0)
 
 import urllib
@@ -11,7 +21,7 @@ import urllib.error
 import time
 import psutil
 import base64
-from multiprocessing import Process
+
 
 import json
 from lib.core.Logger import Logger
@@ -194,6 +204,53 @@ class SQLMap:
     def exec(self):
         pass
 
+
+
+class CONTENT_TYPE(object):
+    TARGET = 0
+    TECHNIQUES = 1
+    DBMS_FINGERPRINT = 2
+    BANNER = 3
+    CURRENT_USER = 4
+    CURRENT_DB = 5
+    HOSTNAME = 6
+    IS_DBA = 7
+    USERS = 8
+    PASSWORDS = 9
+    PRIVILEGES = 10
+    ROLES = 11
+    DBS = 12
+    TABLES = 13
+    COLUMNS = 14
+    SCHEMA = 15
+    COUNT = 16
+    DUMP_TABLE = 17
+    SEARCH = 18
+    SQL_QUERY = 19
+    COMMON_TABLES = 20
+    COMMON_COLUMNS = 21
+    FILE_READ = 22
+    FILE_WRITE = 23
+    OS_CMD = 24
+    REG_READ = 25
+    STATEMENTS = 26
+
+
+class CONTENT_STATUS(object):
+    IN_PROGRESS = 0
+    COMPLETE = 1
+
+
+INJECTION_TYPE = {
+    '1': 'Boolean-based blind',
+    '2': 'Error-based',
+    '3': 'Union query-based',
+    '4': 'Stacked queries',
+    '5': 'Time-based blind',
+    '6': 'Inline queries'
+}
+
+
 def jsonize(data):
     """
     Returns JSON serialized data
@@ -202,6 +259,7 @@ def jsonize(data):
     '{\\n    "foo": "bar"\\n}'
     """
     return json.dumps(data, sort_keys=False, indent=4)
+
 
 def dejsonize(data):
     """
@@ -212,6 +270,7 @@ def dejsonize(data):
     """
 
     return json.loads(data)
+
 
 # TODO 待理解修改
 def execute(command, cwd=None, timeout=None, background=False):
