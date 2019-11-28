@@ -1,16 +1,16 @@
 # coding: utf-8
 
 
-class PHP:
+class PythonDynamic:
     def __init__(self):
         pass
 
     @staticmethod
     def meta():
         return {
-            'name': 'PHP',
-            'command': 'php',
-            'description': 'Extension for PHP websites',
+            'name': 'Python dynamic websites',
+            'command': 'python-dynamic',
+            'description': 'Extension for Python dynamic websites',
             'version': 'dev'
         }
 

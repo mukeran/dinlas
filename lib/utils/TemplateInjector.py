@@ -1,16 +1,15 @@
 # coding:utf-8
 
 
-class SQLInjector:
-    def __init__(self, results, reports, **kwargs):
-        self.args = kwargs
+class TemplateInjector:
+    def __init__(self, results, **kwargs):
         self.results = results
-        self.reports = reports
+        self.args = kwargs
 
     @staticmethod
     def meta():
         return {
-            'name': 'SQL Injector for all',
+            'name': 'Template Injector for all',
             'version': '1.0'
         }
 
