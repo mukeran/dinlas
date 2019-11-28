@@ -11,6 +11,10 @@ class StaticRequestFinder:
         self.results = results
         self.args = kwargs
         self.requests = []
+        self.cookies = {}
+        for entry in self.args['cookie'].split(';'):
+            key, value = entry.strip().split('=', 1)
+            self.cookies[key] = value
 
     @staticmethod
     def meta():
@@ -32,7 +36,7 @@ class StaticRequestFinder:
                 break
             url = queue.get_nowait()
             print(url)
-            r = session.get(url)
+            r = session.get(url, cookies=self.cookies)
             links = r.html.absolute_links
             for link in links:
                 def is_exclude():

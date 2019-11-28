@@ -9,8 +9,9 @@ from lib.core.Logger import Logger
 DEFAULT_LEVEL = 1
 
 class SQLInjector:
-    def __init__(self, results, **kwargs):
+    def __init__(self, results, reports, **kwargs):
         self.args = kwargs
+        self.reports = reports
         self.results = results
         self.sqlmap = SQLMap()
         self.scanList = {}
@@ -64,9 +65,9 @@ class SQLInjector:
             report['header'] = ['URL', 'method', 'Parameter', 'Type', 'Payload']
             entries = []
             for ent in datas:
-                if(ent['type'] == CONTENT_TYPE.TARGET):
+                if ent['type'] == CONTENT_TYPE.TARGET:
                     continue
-                elif(ent['type'] == CONTENT_TYPE.TECHNIQUES):
+                elif ent['type'] == CONTENT_TYPE.TECHNIQUES:
                     value = ent['value']
                     for vuln in value:
                         url = task['url']
@@ -77,6 +78,8 @@ class SQLInjector:
                             payload = d['payload']
                             entries.append([url, method, parameter, title, payload])
             report['entries'] = entries
+            Logger.debug(report)
+            self.reports.append(report)
 
         rep = "%s" % task["log"]
         if 'CRITICAL' in rep:
@@ -121,6 +124,9 @@ class SQLInjector:
         option['level'] = DEFAULT_LEVEL
         option['url'] = form['url']
         option['method'] = form['method']
+        if 'cookie' in self.args:
+            Logger.debug('Cookie Set {}'.format(self.args['cookie']))
+            option['cookies'] = self.args['cookie']
         if 'https' in option['url']:
             option['forceSSL'] = True
         if form['content-type'] == 'application/x-www-form-urlencoded':
@@ -137,6 +143,7 @@ class SQLInjector:
 
     def exec(self):
         self.launch()
+        Logger.debug('requests: {}'.format(self.results))
         for i in self.results['requests']:
             self.add(i)
         self.wait_result()

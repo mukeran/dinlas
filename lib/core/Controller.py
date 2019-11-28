@@ -5,7 +5,8 @@ import inspect
 
 from tabulate import tabulate
 
-from lib.extensions import extensions, mappings
+from lib.core.Reporter import Reporter
+from lib.extensions import extensions
 
 
 class Controller:
@@ -17,6 +18,9 @@ class Controller:
                 exit(1)
             extension = self.args['extension'](**self.args)
             extension.exec()
+            reporter = Reporter(extension.reports, **self.args)
+            reporter.generate()
+
         elif self.args['action'] == 'extensions':
             print('The installed extensions are followings:')
             table = []
