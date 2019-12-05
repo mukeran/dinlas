@@ -1,17 +1,17 @@
 # coding: utf-8
 
 
-class PHP:
+class API:
     def __init__(self):
         pass
 
     @staticmethod
     def meta():
         return {
-            'name': 'PHP',
-            'command': 'php',
-            'description': 'Extension for PHP websites',
-            'version': 'dev'
+            'name': 'API',
+            'command': 'api',
+            'description': 'Extension for specific API',
+            'version': '1.0'
         }
 
     @staticmethod

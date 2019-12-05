@@ -1,8 +1,20 @@
 # coding:utf-8
 
-from .vue import Vue
+from .api import API
+from .default import Default
+from .dynamic import Dynamic
+from .static import Static
+from .php import PHP
+from .python_dynamic import PythonDynamic
+from .python_static import PythonStatic
 
-extensions = [Vue]
+extensions = [API, Default, Dynamic, Static, PHP, PythonDynamic, PythonStatic]
 mappings = {
-    'vue': Vue
+    'api': API,
+    'default': Default,
+    'dynamic': Dynamic,
+    'static': Static,
+    'php': PHP,
+    'python_dynamic': PythonDynamic,
+    'python_static': PythonStatic
 }
