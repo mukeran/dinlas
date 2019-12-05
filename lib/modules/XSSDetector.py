@@ -18,7 +18,7 @@ xss_payload = [
     'ICkvLyUwRCUwQSUwZCUwYS8vPC9zdFlsZS88L3RpdExlLzwvdGVYdGFyRWEvPC9zY1JpcHQvLS0hPlx4M2NzVmcvPHNWZy9vTmxvQWQ9',
     'Ly8+XHgzZQ=='
 ]
-script_template = "window.location.href='http://127.0.0.1:{}?uuid={}&name={}'"
+script_template = "window.location.href='http://127.0.0.1:{}?uuid={}&name={}&url='+window.location.href"
 
 
 class XSSDetector:
@@ -109,7 +109,7 @@ class XSSDetector:
                 if 'uuid' in query and 'name' in query:
                     self.lock.acquire()
                     try:
-                        pair = (query['uuid'][0], query['name'][0])
+                        pair = (query['uuid'][0], query['name'][0], query['url'][0])
                         if pair not in self.vulnerable:
                             self.vulnerable.append(pair)
                     finally:
@@ -173,12 +173,12 @@ class XSSDetector:
     def make_report(self):
         def make_entry(v):
             request = self.results['requests'][v[0]]
-            return [request['location'], request['url'], request['method'], v[1]]
+            return [request['location'], request['url'], request['method'], v[1], v[2]]
 
         self.reports.append({
             'title': 'XSS Injection Points',
             'overview': 'Found {} XSS injection point(s)'.format(len(self.vulnerable)),
-            'header': ['Location', 'Target', 'Method', 'Name'],
+            'header': ['Form Location', 'Target', 'Method', 'Name', 'XSS Location'],
             'entries': list(map(make_entry, self.vulnerable))
         })
 
