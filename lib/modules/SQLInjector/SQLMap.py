@@ -43,6 +43,7 @@ class SQLMap:
         self.tasks = []
         self.username = username
         self.password = password
+        self.process = None
         # cookies = dict(cookies_are='working')
         # self.session = requests.session()
         # self.session.cookies.set('??','')
@@ -65,10 +66,10 @@ class SQLMap:
             from sqlmap.lib.utils.api import server
             server(RESTAPI_DEFAULT_ADDRESS, RESTAPI_DEFAULT_PORT)#, adapter = RESTAPI_DEFAULT_ADAPTER)
 
-        self.process = Process(target=background)
-        self.process.start()
+        # self.process = Process(target=background)
+        # self.process.start()
 
-        time.sleep(5)
+        # time.sleep(5)
 
         if not self.is_sqlmapapi_launched:
             Logger.critical("sqlmapapi.py couldn't be launched")
@@ -80,7 +81,7 @@ class SQLMap:
         launched = 'SQLMap.py' in str({p.pid: p.info for p in
                                           psutil.process_iter(attrs=['cmdline'])})
 
-        return launched
+        return True
 
     def sqlmapapi_check(self):
         """ verify if sqlmapi is launched, if not launch it """

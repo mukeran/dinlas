@@ -1,7 +1,6 @@
 # coding:utf-8
 
 import os
-import random
 import time
 
 from jinja2 import Environment, FileSystemLoader

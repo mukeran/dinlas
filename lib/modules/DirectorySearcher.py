@@ -51,7 +51,7 @@ class DirectorySearcher:
                 })
         self.results['directories'] = self.directories
         self.reports.append({
-            'title': 'Hidden web files/paths',
+            'title': 'Hidden Web Files/Paths',
             'overview': 'Found {} potential hidden web files/paths'.format(len(self.directories)),
             'header': ['Path', 'Status Code'],
             'entries': list(map(lambda x: [x['path'], x['status_code']], self.directories))
