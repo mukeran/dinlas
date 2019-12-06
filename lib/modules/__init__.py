@@ -5,4 +5,5 @@ from .SQLInjector import SQLInjector
 from .StaticRequestFinder import StaticRequestFinder
 from .TemplateInjector import TemplateInjector
 from .WeakPasswordTester import WeakPasswordTester
-from .XSSDetector import XSSDetector
+from .StoredXSSDetector import StoredXSSDetector
+from .ReflectedXSSDetector import ReflectedXSSDetector

@@ -1,6 +1,7 @@
 # coding:utf-8
 
-from lib.modules import StaticRequestFinder, SQLInjector, WeakPasswordTester, DirectorySearcher, XSSDetector
+from lib.modules import StaticRequestFinder, SQLInjector, WeakPasswordTester, DirectorySearcher, StoredXSSDetector,\
+    ReflectedXSSDetector
 
 
 class Static:
@@ -38,11 +39,12 @@ class Static:
 
     @staticmethod
     def modules():
-        return [DirectorySearcher, StaticRequestFinder, SQLInjector, XSSDetector, WeakPasswordTester]
+        return [DirectorySearcher, StaticRequestFinder, SQLInjector, StoredXSSDetector, WeakPasswordTester]
 
     def exec(self):
         # DirectorySearcher(self.results, self.reports, **self.args).exec()
         StaticRequestFinder(self.results, **self.args).exec()
         # SQLInjector(self.results, self.reports, **self.args).exec()
-        XSSDetector(self.results, self.reports, **self.args).exec()
+        StoredXSSDetector(self.results, self.reports, **self.args).exec()
+        ReflectedXSSDetector(self.results, self.reports, **self.args).exec()
         WeakPasswordTester(self.results, self.reports, **self.args).exec()
