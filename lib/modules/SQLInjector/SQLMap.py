@@ -1,22 +1,5 @@
 # coding:utf-8
-if __name__ == '__main__':
-    import sqlmap.sqlmapapi
-    sqlmap.sqlmapapi.main()
-    exit(0)
 
-from multiprocessing import Process
-if __name__ == '__main__':
-    def sqlmapapi():
-        import sqlmap.sqlmapapi
-        sqlmap.sqlmapapi.main()
-
-
-    process = Process(target=sqlmapapi)
-    process.start()
-    exit(0)
-
-
-import sys
 import urllib
 import urllib.request
 import urllib.error
@@ -24,10 +7,9 @@ import time
 import psutil
 import base64
 
-
 import json
 from lib.core.Logger import Logger
-import subprocess
+import multiprocessing
 
 # Default REST-JSON API server listen address
 RESTAPI_DEFAULT_ADDRESS = "127.0.0.1"
@@ -36,14 +18,15 @@ RESTAPI_DEFAULT_ADDRESS = "127.0.0.1"
 RESTAPI_DEFAULT_PORT = 8775
 RESTAPI_DEFAULT_ADAPTER = "wsgiref"
 
+
 class SQLMap:
-    def __init__(self, host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username = '', password = '', **kwargs):
+    def __init__(self, host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username='', password='', **kwargs):
+        self.process = multiprocessing.Process(target=self.background, args=['sqlmapapi.py', '-s'])
         self.args = kwargs
         self.api_url = "http://%s:%d" % (host, port)
         self.tasks = []
         self.username = username
         self.password = password
-        self.process = None
         # cookies = dict(cookies_are='working')
         # self.session = requests.session()
         # self.session.cookies.set('??','')
@@ -58,18 +41,24 @@ class SQLMap:
             'version': '1.0'
         }
 
+    @staticmethod
+    def background(*_args, **_kwargs):
+        from sqlmap.sqlmapapi import main
+        import sys
+        print(_args)
+        sys.argv = list(_args)
+        main()
+
+    @staticmethod
+    def background2(*_args, **_kwargs):
+        from sqlmap.lib.utils.api import server
+        server(RESTAPI_DEFAULT_ADDRESS, RESTAPI_DEFAULT_PORT)  # , adapter = RESTAPI_DEFAULT_ADAPTER)
 
     def sqlmapapi_launch(self):
         """ launches sqlmapapi in another process and make sure it launched """
+        self.process.start()
 
-        def background():
-            from sqlmap.lib.utils.api import server
-            server(RESTAPI_DEFAULT_ADDRESS, RESTAPI_DEFAULT_PORT)#, adapter = RESTAPI_DEFAULT_ADAPTER)
-
-        # self.process = Process(target=background)
-        # self.process.start()
-
-        # time.sleep(5)
+        time.sleep(5)
 
         if not self.is_sqlmapapi_launched:
             Logger.critical("sqlmapapi.py couldn't be launched")
@@ -77,14 +66,13 @@ class SQLMap:
     @property
     def is_sqlmapapi_launched(self):
         """ return True if sqlmapapi is launched, otherwise False """
-        launched = False
         launched = 'SQLMap.py' in str({p.pid: p.info for p in
-                                          psutil.process_iter(attrs=['cmdline'])})
+                                       psutil.process_iter(attrs=['cmdline'])})
 
-        return True
+        return launched
 
     def sqlmapapi_check(self):
-        """ verify if sqlmapi is launched, if not launch it """
+        """ verify if sqlmap is launched, if not launch it """
         Logger.info("Checking if sqlmapapi is already launched")
 
         if not self.is_sqlmapapi_launched:
@@ -92,7 +80,7 @@ class SQLMap:
             self.sqlmapapi_launch()
 
     def _client(self, url, options=None):
-        # logger.debug("Calling '%s'" % url)
+        """From the source code of sqlmap. sqlmapapi--client"""
         try:
             data = None
             if options is not None:
@@ -114,7 +102,6 @@ class SQLMap:
         return text
 
     def __del__(self):
-        # self.session.close()
         pass
 
     def test_connection(self):
@@ -122,10 +109,10 @@ class SQLMap:
             self._client(self.api_url)
         except Exception as ex:
             if not isinstance(ex, urllib.error.HTTPError):
-                errMsg = "There has been a problem while connecting to the "
-                errMsg += "REST-JSON API server at '%s' " % self.api_url
-                errMsg += "(%s)" % ex
-                Logger.critical(errMsg)
+                err_msg = "There has been a problem while connecting to the "
+                err_msg += "REST-JSON API server at '%s' " % self.api_url
+                err_msg += "(%s)" % ex
+                Logger.critical(err_msg)
                 return False
         return True
 
@@ -140,13 +127,13 @@ class SQLMap:
             Logger.error("Failed to create new task")
             return False
         else:
-            taskid = res["taskid"]
-            Logger.info("New task ID is '%s'" % taskid)
-            self.tasks.append(taskid)
-            return taskid
+            task_id = res["taskid"]
+            Logger.info("New task ID is '%s'" % task_id)
+            self.tasks.append(task_id)
+            return task_id
 
-    def _scan_start(self, taskid, options):
-        raw = self._client("%s/scan/%s/start" % (self.api_url, taskid), options)
+    def _scan_start(self, task_id, options):
+        raw = self._client("%s/scan/%s/start" % (self.api_url, task_id), options)
         res = dejsonize(raw)
         if not res["success"]:
             Logger.error("Failed to start scan")
@@ -155,11 +142,11 @@ class SQLMap:
         return res
 
     def scan(self, options):
-        taskid = self._new_task_id()
-        return self._scan_start(taskid, options), taskid
+        task_id = self._new_task_id()
+        return self._scan_start(task_id, options), task_id
 
     def admin(self, command):
-        if not command in ('list', 'flush'):
+        if command not in ('list', 'flush'):
             Logger.error("Invalid call to sqlmapapi admin")
         raw = self._client("%s/admin/%s" % (self.api_url, command))
         res = dejsonize(raw)
@@ -167,36 +154,35 @@ class SQLMap:
             Logger.error("Failed to execute sqlmap API admin command %s" % command)
         return res
 
-    def task(self, command, taskid):
-        if not taskid:
+    def task(self, command, task_id):
+        if not task_id:
             Logger.error("No task ID")
         if command in ("data", "log", "status", "stop", "kill"):
-            raw = self._client("%s/scan/%s/%s" % (self.api_url, taskid, command))
+            raw = self._client("%s/scan/%s/%s" % (self.api_url, task_id, command))
             res = dejsonize(raw)
             if not res["success"]:
                 Logger.error("Failed to execute command %s" % command)
             return res
-        elif command in ('option'):
-            raw = self._client("%s/option/%s/list" % (self.api_url, taskid))
+        elif command in 'option':
+            raw = self._client("%s/option/%s/list" % (self.api_url, task_id))
             res = dejsonize(raw)
             if not res["success"]:
                 Logger.error("Failed to execute command %s" % command)
             return res
 
-    def option(self, taskid, options):
+    def option(self, task_id, options):
         """
             Get value of option(s) for a certain task ID
             options is a array
         """
-        raw = self._client("%s/option/%s/get" % (self.api_url, taskid), options)
+        raw = self._client("%s/option/%s/get" % (self.api_url, task_id), options)
         res = dejsonize(raw)
         if not res["success"]:
-            Logger.error("Failed to get option for task %s" % taskid)
+            Logger.error("Failed to get option for task %s" % task_id)
         return res
 
     def exec(self):
         pass
-
 
 
 class CONTENT_TYPE(object):
@@ -263,4 +249,3 @@ def dejsonize(data):
     """
 
     return json.loads(data)
-
