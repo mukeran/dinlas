@@ -1,3 +1,4 @@
+coloredlogs
 appdirs==1.4.3
 backcall==0.1.0
 beautifulsoup4==4.8.1
