@@ -1,9 +1,15 @@
 # coding: utf-8
+from lib.modules import SQLInjector, WeakPasswordTester
 
 
 class API:
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        self.args = kwargs
+        self.results = {}
+        self.reports = [{
+            'title': 'Target',
+            'overview': self.args['url']
+        }]
 
     @staticmethod
     def meta():
@@ -16,7 +22,7 @@ class API:
 
     @staticmethod
     def modules():
-        return []
+        return [SQLInjector, WeakPasswordTester]
 
     @staticmethod
     def register_command(parser):
