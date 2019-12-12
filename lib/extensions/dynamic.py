@@ -1,8 +1,8 @@
 # coding:utf-8
 # Please notice that this extension is not finished!!!
 
-from lib.utils.DynamicRequestFinder import DynamicRequestFinder
-from lib.utils.SQLInjector import SQLInjector
+from lib.modules.DynamicRequestFinder import DynamicRequestFinder
+from lib.modules.SQLInjector import SQLInjector
 
 
 class Dynamic:

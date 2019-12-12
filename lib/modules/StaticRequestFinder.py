@@ -3,6 +3,8 @@
 from queue import SimpleQueue
 from urllib.parse import urljoin
 
+from lib.utils.random import randuuid
+
 from requests_html import HTMLSession
 
 
@@ -10,7 +12,7 @@ class StaticRequestFinder:
     def __init__(self, results, **kwargs):
         self.results = results
         self.args = kwargs
-        self.requests = []
+        self.requests = {}
         self.cookies = {}
         for entry in self.args['cookie'].split(';'):
             if entry.find('=') == -1:
@@ -54,6 +56,8 @@ class StaticRequestFinder:
             forms = r.html.find('form')
             for form in forms:
                 request = {
+                    'uuid': randuuid(),
+                    'location': url,
                     'url': urljoin(r.url, form.attrs['action']) if 'action' in form.attrs else '',
                     'method': form.attrs['method'].upper() if 'method' in form.attrs else 'GET',
                     'content-type': form.attrs['enctype'] if 'enctype' in form.attrs else
@@ -78,6 +82,16 @@ class StaticRequestFinder:
                                 'required': required,
                                 'values': [value]
                             }
+                    elif typ == 'checkbox':
+                        checked = True if 'checked' in inp.attrs and (inp.attrs['checked'] == 'checked'
+                                                                      or inp.attrs['checked'] == '') else False
+                        request['fields'][name] = {
+                            'type': 'checkbox',
+                            'name': name,
+                            'required': required,
+                            'value': value,
+                            'checked': checked
+                        }
                     else:
                         request['fields'][name] = {
                             'type': typ,
@@ -116,5 +130,6 @@ class StaticRequestFinder:
                         'required': required,
                         'values': values
                     }
-                self.requests.append(request)
+                self.requests[request['uuid']] = request
         self.results['requests'] = self.requests
+        self.results['urls'] = list(visited)

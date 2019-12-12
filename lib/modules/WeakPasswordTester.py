@@ -26,7 +26,8 @@ class WeakPasswordTester:
         if 'requests' not in self.results:
             raise NoRequestsException
         self.results['weak_passwords'] = []
-        for request in self.results['requests']:
+        for uuid in self.results['requests']:
+            request = self.results['requests'][uuid]
             if request['content-type'] == 'text/plain':
                 continue
             regex = ['.*log.*in.*', '.*sign.*in.*', '.*opt.*in.*', '.*index.*']
@@ -92,6 +93,8 @@ class WeakPasswordTester:
                                 params[field] = request['fields'][field]['default']
                             elif 'values' in request['fields'][field]:
                                 params[field] = request['fields'][field]['values'][0]
+                            elif 'value' in request['fields'][field]:
+                                params[field] = request['fields'][field]['value']
                             else:
                                 params[field] = ''
                     if request['method'] == 'GET':
