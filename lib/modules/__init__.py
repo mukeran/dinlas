@@ -7,3 +7,4 @@ from .TemplateInjector import TemplateInjector
 from .WeakPasswordTester import WeakPasswordTester
 from .StoredXSSDetector import StoredXSSDetector
 from .ReflectedXSSDetector import ReflectedXSSDetector
+from .FileUploadDetector import FileUploadDetector

@@ -194,8 +194,8 @@ class CSRFDetector:
                     logging.debug('keyword in action, skip {}:'.format(form))  # 用一个id表示？
                     continue
 
-                if form.find('input[type="password"]'):
-                    continue
+                # if form.find('input[type="password"]'):
+                #     continue
                 # skip by placeholder filter
 
                 def filter_placeholder(form_to_filter):
