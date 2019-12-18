@@ -10,6 +10,8 @@ import base64
 import json
 import logging
 import multiprocessing
+import logging
+
 
 # Default REST-JSON API server listen address
 RESTAPI_DEFAULT_ADDRESS = "127.0.0.1"

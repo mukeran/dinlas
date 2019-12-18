@@ -2,9 +2,9 @@
 
 import time
 from urllib import parse
+import logging
 
 from .SQLMap import SQLMap, CONTENT_STATUS, CONTENT_TYPE
-import logging
 
 DEFAULT_LEVEL = 1
 
@@ -12,8 +12,10 @@ DEFAULT_LEVEL = 1
 class SQLMapInjector:
     def __init__(self, results, reports, **kwargs):
         report = {'title': 'SQL Injection',
-                  'overview': 'SQL injection vulnerabilities allow an attacker to alter the queries executed on the backend database. '
-                              'An attacker may then be able to extract or modify informations stored in the database or even escalate his privileges on the system.',
+                  'overview': 'SQL injection vulnerabilities allow an attacker to'
+                              ' alter the queries executed on the backend database. '
+                              'An attacker may then be able to extract or modify informations stored in the database'
+                              ' or even escalate his privileges on the system.',
                   'entries': [], 'header': ['URL', 'method', 'Parameter', 'Type', 'Payload']}
         self.sql_report = report
         self.args = kwargs
@@ -151,4 +153,3 @@ class SQLMapInjector:
             self.add(i)
         self.wait_result()
         # logging.debug(report)
-

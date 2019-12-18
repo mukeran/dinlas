@@ -1,7 +1,12 @@
 # coding: utf-8
-
+import os
 from random import randrange
 
+
+def read_payload(root, filename):
+    dir_ = '{}/dictionary/file_upload_payloads/'.format(root)
+    with open(os.path.join(dir_, filename), 'rb') as fd:
+        return fd.read()
 
 class Dictionary:
     def __init__(self, entries):
