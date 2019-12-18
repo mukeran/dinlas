@@ -58,7 +58,7 @@ class StaticRequestFinder:
                 request = {
                     'uuid': randuuid(),
                     'location': url,
-                    'url': urljoin(r.url, form.attrs['action']) if 'action' in form.attrs else '',
+                    'url': urljoin(r.url, form.attrs['action']) if 'action' in form.attrs else url,
                     'method': form.attrs['method'].upper() if 'method' in form.attrs else 'GET',
                     'content-type': form.attrs['enctype'] if 'enctype' in form.attrs else
                     'application/x-www-form-urlencoded',

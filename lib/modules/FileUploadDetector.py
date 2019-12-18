@@ -118,13 +118,13 @@ class FileUploadDetector:
 
             response = self._session.post(url, files={input_name: (filename, fd, mime)},
                                           data=post_data)
-            logging.debug('sent file, name: {}, mime: {}'.format(filename, mime))
+            logging.info('sent file, name: {}, mime: {}, status: {}'.format(filename, mime, response.status_code))
         return response
 
     def exec(self):
         # logging.basicConfig(level=logging.DEBUG)
         # detect jsp or php.
-        logging.debug(self.results)
+        # logging.debug(self.results)
         show_php = 0
         show_jsp = 0
         for form in self.results['requests'].values():
@@ -161,7 +161,7 @@ class FileUploadDetector:
             if not form['content-type'].startswith('multipart'):
                 logging.warning('file input with enctype {} found at {}'.format(form['content-type'], form['url']))
 
-            logging.debug('testing {}'.format(form['url']))
+            logging.info('testing {}'.format(form['url']))
 
             # detect valid extention
             for ext_ in self.mime_types:
@@ -175,7 +175,7 @@ class FileUploadDetector:
                 r = self.upload_success(res.text)
                 if r:
                     self.valid_exts.append(ext_)
-                    logging.debug('ext {} allowed'.format(ext_))
+                    logging.info('ext {} allowed'.format(ext_))
             # try file upload techniques
             # for php ext, try send different ext variant with different mime
             # for every valid and nasty mime, for every ext, for every ext technique(%00.) and test code exec
@@ -222,7 +222,7 @@ class FileUploadDetector:
     def upload_success(self, html):
         if self.success_regex:
             uploaded = re.search(self.success_regex, html)
-            logging.warning('upload regex: {}'.format(uploaded))
+            logging.info('upload regex match: {}'.format(uploaded))
             return uploaded
 
     def code_exec(self, u, regex):
@@ -230,5 +230,5 @@ class FileUploadDetector:
         res = self._session.get(u)
 
         r = re.search(regex, res.text)
-        logging.warning('detecting code exec {}, {}'.format(u, r))
+        logging.debug('detecting code exec {}, {}'.format(u, r))
         return bool(r)

@@ -17,7 +17,6 @@ def mutate(form):
     for payload in payloads:
         for para in o_data:
             data = form['data'].copy()
-            # logging.debug('data copy: {}'.format(data is form['data']))
             data[para] += payload  # add payload rear
             form['mutated'] = data
             yield form, para
@@ -84,14 +83,14 @@ class SQLInjector:
                                              timeout=self.timeout)
             elif form['method'].upper() == 'POST':
                 if form.get("content-type", "application/x-www-form-urlencoded") != "application/x-www-form-urlencoded":
-                    logging.error('Unknown content-type: {}'.format(form["content-type"]))
+                    logging.info('skip enctype: {}'.format(form["content-type"]))
                 response = self._session.post(form['url'],
                                               data=data,
                                               headers=self.headers,
                                               allow_redirects=False,
                                               timeout=self.timeout)
             else:
-                logging.error('Wired HTTP Method: {}'.format(form['method']))
+                logging.warning('Wired HTTP Method: {}'.format(form['method']))
                 response = self._session.request(form['method'], form['url'],
                                                  data=data,
                                                  headers=self.headers,
@@ -227,7 +226,7 @@ class SQLInjector:
             vuln_parameters = set()
             start_time = time.time()
 
-            logging.debug('testing {}'.format(form['url']))
+            logging.info('testing {}'.format(form['url']))
             for mutated_form, parameter in mutate(form):
                 if current_parameter != parameter:
                     current_parameter = parameter
@@ -262,16 +261,16 @@ class SQLInjector:
                 try:
                     response = self.craft_request(mutated_form)
                 except ReadTimeout:
-                    logging.debug('found possible injection, start to double check')
-                    logging.debug('parameter: {} mutated form: {}'.format(parameter, mutated_form,))
+                    logging.info('found possible injection, start to double check')
+                    logging.info('parameter: {} mutated form: {}'.format(parameter, mutated_form,))
                     if not self.wait_till_response():
                         logging.warning("Can't test server connection by get the url...or the server dead? ")
                         skip_current = True
                     if not self.check_timeout(mutated_form):
-                        logging.warning("Too much lag from website, can't reliably test time based blind SQLi")
+                        logging.warning("Too much lag from website, can't reliably test time based blind SQLi, skip.")
                         skip_current = True
                         continue
-                    logging.info("Blind SQL Injection found.")
+                    logging.critical("Blind SQL Injection found.")
                     self.report(mutated_form, parameter, "Blind SQL Injection vulnerability", '')
                     vuln_parameters.add(parameter)
                 else:

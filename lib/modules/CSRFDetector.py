@@ -21,7 +21,7 @@ def find_token(form, form2):
         if 'value' in hid.attrs and 'value' in hid2.attrs and \
                 'name' in hid.attrs and 'name' in hid2.attrs:
             if hid.attrs['value'] != hid2.attrs['value']:
-                logging.info('CSRF Token Detected: name:{}, before:{}, after:{}'
+                logging.info('CSRF Token Detected: name:{}, changed from {} to {}'
                              .format(hid.attrs['name'], hid.attrs['value'], hid2.attrs['value']))
                 return True
         else:
@@ -303,5 +303,5 @@ def value(field):
 
 def craft_fields(fields):
     # request = {"url": url, "cookie": "PHPSESSID=muihhepaqno9bn31mhfrgstk00; security=low"}
-    logging.debug('fields: {}'.format(fields))
+    # logging.debug('fields: {}'.format(fields))
     return {field['name']: value(field) for field in fields.values() if value(field)}
