@@ -1,12 +1,14 @@
 # coding:utf-8
 
+from lib.core.Logger import Logger
 from urllib import parse
+from copy import deepcopy
 
 import requests
 import random
 
 
-class TemplateInjector:
+class SSTIDetector:
     def __init__(self, results, reports, **kwargs):
         self.results = results
         self.reports = reports
@@ -16,7 +18,7 @@ class TemplateInjector:
     @staticmethod
     def meta():
         return {
-            'name': 'Template Injector for all',
+            'name': 'Server-Side Template Injector for all',
             'version': '1.0'
         }
 
@@ -63,25 +65,24 @@ class TemplateInjector:
                     _url += '/' + latter
                 attack_url.append({'url': _url, 'payload': payload})
 
-            _url += parse_result.path
+            _url += parse_result.path + '?'
 
-            for value in query.values():
-                for i in value:
-                    q = ''
-                    payload = set_payload()
-                    for _key, _value in query.items():
-                        for j in _value:
-                            q += '&' + _key + '='
-                            if i == j:
-                                q += payload['payload']
-                            else:
-                                q += j
-                    q = '?' + q[1:]
-                    attack_url.append({'url': _url + q, 'payload': payload})
+            for key in query.keys():
+                payload = set_payload()
+                tmp = deepcopy(query)
+                tmp[key][0] = payload['payload']
+                _query = []
+                for _key, _value in tmp.items():
+                    _query += list(map(lambda x: '{}={}'.format(_key, x), _value))
+                attack_url.append({'url': _url + '&'.join(_query), 'payload': payload})
+
+            if attack_url.len() == 0:
+                Logger.critical('SSTI Not Detected: No vulnerable url')
 
             for test_url in attack_url:
                 req = requests.get(test_url, header=header)
                 if req.text.find(test_url['payload']['check_str']) != -1:
+                    Logger.critical('SSTI Detected: vulnerable url: {}'.format(test_url))
                     self.vulnerable.append({
                         'url': test_url['url'],
                         'payload': test_url['payload']['payload']
@@ -93,5 +94,6 @@ class TemplateInjector:
                 'header': ['Path', 'Payload'],
                 'entries': list(map(lambda x: [x['url'], x['payload']], self.vulnerable))
             })
+            Logger.info("SSTI scan finished!")
 
         pass
