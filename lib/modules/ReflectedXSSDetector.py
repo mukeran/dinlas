@@ -6,6 +6,7 @@ import threading
 import time
 import base64
 import html
+import logging
 
 from lib.exceptions import NoRequestsException
 
@@ -36,10 +37,13 @@ class ReflectedXSSDetector:
             key, value = entry.strip().split('=', 1)
             self.cookies[key] = value
         # Create proxy server
+        logging.info('Starting browsermobproxy server...')
         self.proxy_server = Server(self.args['browsermobproxy'])
         self.proxy_server.start()
         self.proxy = self.proxy_server.create_proxy()
+        logging.info('Browsermobproxy server started')
         # Create Chrome engine
+        logging.info('Creating Selenium Chrome webdriver...')
         self.chrome_options = webdriver.ChromeOptions()
         self.chrome_options.add_argument('--proxy-server={}'.format(self.proxy.proxy))
         if 'headless' in self.args:
@@ -47,6 +51,7 @@ class ReflectedXSSDetector:
         self.chrome_options.add_argument('--disable-gpu')
         self.chrome_options.add_argument("--disable-extensions")
         self.driver = webdriver.Chrome(chrome_options=self.chrome_options)
+        logging.info('Selenium Chrome webdriver created')
 
     @staticmethod
     def meta():
@@ -73,7 +78,7 @@ class ReflectedXSSDetector:
                 s.wfile.write(b'')
 
         def start_server():
-            print('Starting listening server at port {}'.format(self.listen_port))
+            logging.info('Starting monitor server at port {}...'.format(self.listen_port))
             self.server.serve_forever()
 
         self.server = HTTPServer(('127.0.0.1', self.listen_port), Handler)
@@ -83,8 +88,10 @@ class ReflectedXSSDetector:
 
     def proceed(self):
         for uuid in self.results['requests']:
+            logging.info('Testing payload for form {}'.format(uuid))
             request = self.results['requests'][uuid]
             if request['content-type'] == 'text/plain' or request['method'] != 'GET':
+                logging.warning('Skipped form {} due to its "text/plain" Content-Type or "POST" method'.format(uuid))
                 continue
             params = {}
             for name in request['fields']:
@@ -114,7 +121,7 @@ class ReflectedXSSDetector:
 
     def stop_server(self):
         self.server.shutdown()
-        print('The server has been closed')
+        logging.info('The monitoring server has been closed')
 
     def make_report(self):
         def make_entry(v):
@@ -129,13 +136,17 @@ class ReflectedXSSDetector:
         })
 
     def exec(self):
+        logging.info('Start to test reflected XSS points')
         if 'requests' not in self.results:
+            logging.fatal('There\'s no requests in results')
             raise NoRequestsException
         self.start_server()
         self.proceed()
         self.stop_server()
         self.make_report()
+        logging.info('Stopping proxy server and Chrome webdriver...')
         self.proxy.close()
         self.proxy_server.stop()
         self.driver.stop_client()
         self.driver.close()
+        logging.info('Proxy server and Chrome webdriver have been closed')

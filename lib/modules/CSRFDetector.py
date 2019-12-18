@@ -1,5 +1,7 @@
 # coding:utf-8
-from lib.core.Logger import Logger
+
+import logging
+
 from requests_html import HTMLSession
 from urllib.parse import urljoin, urlencode
 from http.cookies import SimpleCookie
@@ -47,16 +49,16 @@ class CSRFDetector:
         hidden = form.find(':hidden')
         hidden2 = form2.find(':hidden')
         if len(hidden) != len(hidden2):
-            Logger.error("two requests doesn't have the same hidden inputs")
+            logging.error("two requests doesn't have the same hidden inputs")
         for hid, hid2 in zip(hidden, hidden2):
             if 'value' in hid.attrs and 'value' in hid2.attrs and \
                     'name' in hid.attrs and 'name' in hid2.attrs:
                 if hid.attrs['value'] != hid2.attrs['value']:
-                    Logger.info('CSRF Token Detected: name:{}, before:{}, after:{}'
+                    logging.info('CSRF Token Detected: name:{}, before:{}, after:{}'
                                 .format(hid['name'], hid.attrs['value'], hid2.attrs['value']))
                     return True
             else:
-                Logger.debug('hidden input without value or name :{}\n{}'.format(hid.attrs, hid2.attrs))
+                logging.debug('hidden input without value or name :{}\n{}'.format(hid.attrs, hid2.attrs))
         return False
 
     def find_recaptcha(self, form):
@@ -72,12 +74,12 @@ class CSRFDetector:
                 if '?' in src:
                     src = src.split('?')[0]
                 suffix = src.split('/')[-1].split('.')[-1]
-                Logger.debug("img suffix: {}".format(suffix))
+                logging.debug("img suffix: {}".format(suffix))
                 if len(suffix) < 5:
                     if [fil for fil in self.img_suffix if fil in suffix]:  # or ==
-                        Logger.info("non recaptcha img in form detected: {}".format(img.attrs['src']))
+                        logging.info("non recaptcha img in form detected: {}".format(img.attrs['src']))
                         return False
-                    Logger.info("recaptcha detected: {}".format(img.attrs['src']))
+                    logging.info("recaptcha detected: {}".format(img.attrs['src']))
                     return True
         return False
 
@@ -166,7 +168,7 @@ class CSRFDetector:
         if abs(len(req1.text) - len(req2.text)) < (len(req1.text) * 0.1):
             if req1.status_code == req2.status_code and 200 <= req1.status_code < 300:
                 return True
-            Logger.debug('status code check failed {}\n\n{}'.format(req1.text, req2.text))
+            logging.debug('status code check failed {}\n\n{}'.format(req1.text, req2.text))
         return False
 
     def exec(self):
@@ -184,7 +186,7 @@ class CSRFDetector:
                 # skip useless form by black list
                 action = form.attrs['action'] if 'action' in form.attrs else location
                 if [fil for fil in self.action_filters if fil in action.lower()]:
-                    Logger.debug('keyword in action, skip {}:'.format(form))  # 用一个id表示？
+                    logging.debug('keyword in action, skip {}:'.format(form))  # 用一个id表示？
                     continue
 
                 if form.find('input[type="password"]'):
@@ -194,7 +196,7 @@ class CSRFDetector:
                 def filter_placeholder(form):
                     for ph in form.find('[placeholder]'):
                         if [fil for fil in self.filter_words if fil in ph.attrs['placeholder'].lower()]:
-                            Logger.debug('keyword in placeholder, skip {}'.format(form))
+                            logging.debug('keyword in placeholder, skip {}'.format(form))
                             return True
                     return False
 
@@ -230,24 +232,24 @@ class CSRFDetector:
                     req_no_ref = self._session.request(method, url)
                     req2 = self._session.request(method, url,
                                                  headers={'referer': location})  # ensure referer
-                Logger.debug('assert no referer: {}'.format(req_no_ref.headers))
+                logging.debug('assert no referer: {}'.format(req_no_ref.headers))
                 assert 'referer' not in req_no_ref.headers
                 if self.compare(req1, req_no_ref):
                     if not self.compare(req1, req2):
-                        Logger.critical('Double check failed: {}\ndata2: {}'.format(req1.text, req2.text))
+                        logging.critical('Double check failed: {}\ndata2: {}'.format(req1.text, req2.text))
                         continue
-                    Logger.critical(
+                    logging.critical(
                         'CSRF Detected: text length:{}, without referer: text length:{}'.format(len(req1.text),
                                                                                                 len(req_no_ref.text)))
                     self.report(url, method, data, req1, req_no_ref)
-                Logger.warning(
+                logging.warning(
                     'Referer check detected: text length:{}, without referer: text length:{}'.format(len(req1.text),
                                                                                                      len(req2.text)))
 
         self.csrf_report['overview'] = 'Found {} possible csrf forms. <br>'.format(len(self.csrf_report['entries'])) + \
                                        self.csrf_report['overview']
         self.reports.append(self.csrf_report)
-        Logger.info("CSRF scan finished !")
+        logging.info("CSRF scan finished !")
 
 
 
@@ -291,11 +293,11 @@ def value(field):
             return field['value'] or 'on'
     if field['type'] in defaults:
         return defaults[field['type']]
-    Logger.error('Unknown input type {}'.format(field))
+    logging.error('Unknown input type {}'.format(field))
     return None
 
 
 def craft_fields(fields):
     # request = {"url": url, "cookie": "PHPSESSID=muihhepaqno9bn31mhfrgstk00; security=low"}
-    Logger.debug('fields: {}'.format(fields))
+    logging.debug('fields: {}'.format(fields))
     return {field['name']: value(field) for field in fields.values() if value(field)}

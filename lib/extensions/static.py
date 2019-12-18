@@ -1,5 +1,7 @@
 # coding:utf-8
 
+import logging
+
 from lib.modules import StaticRequestFinder, SQLInjector, WeakPasswordTester, DirectorySearcher, StoredXSSDetector,\
     ReflectedXSSDetector
 
@@ -42,9 +44,11 @@ class Static:
         return [DirectorySearcher, StaticRequestFinder, SQLInjector, StoredXSSDetector, WeakPasswordTester]
 
     def exec(self):
+        logging.info('Start to scan static website {}'.format(self.args['url']))
         # DirectorySearcher(self.results, self.reports, **self.args).exec()
         StaticRequestFinder(self.results, **self.args).exec()
         # SQLInjector(self.results, self.reports, **self.args).exec()
         StoredXSSDetector(self.results, self.reports, **self.args).exec()
         ReflectedXSSDetector(self.results, self.reports, **self.args).exec()
         WeakPasswordTester(self.results, self.reports, **self.args).exec()
+        logging.info('Scan procedure finished')

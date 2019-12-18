@@ -1,6 +1,7 @@
 # coding:utf-8
 
 from urllib.parse import urljoin
+import logging
 
 import requests
 from requests.exceptions import ConnectTimeout, InvalidSchema, ConnectionError
@@ -23,6 +24,7 @@ class DirectorySearcher:
         }
 
     def exec(self):
+        logging.info('Start to find possible hidden path')
         dictionary = Dictionary.preset(self.args['root'], 'common_directory')
         directory_search_limit = self.args['directory_search_limit']
 
@@ -36,6 +38,7 @@ class DirectorySearcher:
 
         for line in entries():
             url = urljoin(self.args['url'], line)
+            logging.info('Testing url {}'.format(url))
             try:
                 r = requests.get(url, timeout=5)
             except ConnectTimeout:
@@ -56,3 +59,4 @@ class DirectorySearcher:
             'header': ['Path', 'Status Code'],
             'entries': list(map(lambda x: [x['path'], x['status_code']], self.directories))
         })
+        logging.log('Found {} potential hidden web files/paths'.format(len(self.directories)))

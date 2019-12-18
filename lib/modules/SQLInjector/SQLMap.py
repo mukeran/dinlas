@@ -8,7 +8,7 @@ import psutil
 import base64
 
 import json
-from lib.core.Logger import Logger
+import logging
 import multiprocessing
 
 # Default REST-JSON API server listen address
@@ -61,7 +61,7 @@ class SQLMap:
         time.sleep(5)
 
         if not self.is_sqlmapapi_launched:
-            Logger.critical("sqlmapapi.py couldn't be launched")
+            logging.critical("sqlmapapi.py couldn't be launched")
 
     @property
     def is_sqlmapapi_launched(self):
@@ -73,10 +73,10 @@ class SQLMap:
 
     def sqlmapapi_check(self):
         """ verify if sqlmap is launched, if not launch it """
-        Logger.info("Checking if sqlmapapi is already launched")
+        logging.info("Checking if sqlmapapi is already launched")
 
         if not self.is_sqlmapapi_launched:
-            Logger.info("Launching sqlmapapi")
+            logging.info("Launching sqlmapapi")
             self.sqlmapapi_launch()
 
     def _client(self, url, options=None):
@@ -97,7 +97,7 @@ class SQLMap:
             text = response.read()
         except:
             if options:
-                Logger.error("Failed to load and parse %s" % url)
+                logging.error("Failed to load and parse %s" % url)
             raise
         return text
 
@@ -112,7 +112,7 @@ class SQLMap:
                 err_msg = "There has been a problem while connecting to the "
                 err_msg += "REST-JSON API server at '%s' " % self.api_url
                 err_msg += "(%s)" % ex
-                Logger.critical(err_msg)
+                logging.critical(err_msg)
                 return False
         return True
 
@@ -124,11 +124,11 @@ class SQLMap:
         raw = self._client("%s/task/new" % self.api_url)
         res = dejsonize(raw)
         if not res["success"]:
-            Logger.error("Failed to create new task")
+            logging.error("Failed to create new task")
             return False
         else:
             task_id = res["taskid"]
-            Logger.info("New task ID is '%s'" % task_id)
+            logging.info("New task ID is '%s'" % task_id)
             self.tasks.append(task_id)
             return task_id
 
@@ -136,9 +136,9 @@ class SQLMap:
         raw = self._client("%s/scan/%s/start" % (self.api_url, task_id), options)
         res = dejsonize(raw)
         if not res["success"]:
-            Logger.error("Failed to start scan")
+            logging.error("Failed to start scan")
             return res
-        Logger.info("Scanning started")
+        logging.info("Scanning started")
         return res
 
     def scan(self, options):
@@ -147,27 +147,27 @@ class SQLMap:
 
     def admin(self, command):
         if command not in ('list', 'flush'):
-            Logger.error("Invalid call to sqlmapapi admin")
+            logging.error("Invalid call to sqlmapapi admin")
         raw = self._client("%s/admin/%s" % (self.api_url, command))
         res = dejsonize(raw)
         if not res["success"]:
-            Logger.error("Failed to execute sqlmap API admin command %s" % command)
+            logging.error("Failed to execute sqlmap API admin command %s" % command)
         return res
 
     def task(self, command, task_id):
         if not task_id:
-            Logger.error("No task ID")
+            logging.error("No task ID")
         if command in ("data", "log", "status", "stop", "kill"):
             raw = self._client("%s/scan/%s/%s" % (self.api_url, task_id, command))
             res = dejsonize(raw)
             if not res["success"]:
-                Logger.error("Failed to execute command %s" % command)
+                logging.error("Failed to execute command %s" % command)
             return res
         elif command in 'option':
             raw = self._client("%s/option/%s/list" % (self.api_url, task_id))
             res = dejsonize(raw)
             if not res["success"]:
-                Logger.error("Failed to execute command %s" % command)
+                logging.error("Failed to execute command %s" % command)
             return res
 
     def option(self, task_id, options):
@@ -178,7 +178,7 @@ class SQLMap:
         raw = self._client("%s/option/%s/get" % (self.api_url, task_id), options)
         res = dejsonize(raw)
         if not res["success"]:
-            Logger.error("Failed to get option for task %s" % task_id)
+            logging.error("Failed to get option for task %s" % task_id)
         return res
 
     def exec(self):

@@ -1,4 +1,7 @@
 # coding: utf-8
+
+import logging
+
 from lib.modules import SQLInjector, WeakPasswordTester
 
 
@@ -29,4 +32,4 @@ class API:
         pass
 
     def exec(self):
-        pass
+        logging.warning('The extension you selected is not finished.')

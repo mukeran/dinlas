@@ -4,7 +4,7 @@ import time
 from urllib import parse
 
 from .SQLMap import SQLMap, CONTENT_STATUS, CONTENT_TYPE
-from lib.core.Logger import Logger
+import logging
 
 DEFAULT_LEVEL = 1
 
@@ -42,33 +42,33 @@ class SQLMapInjector:
         for task in self.running:
             res = self.sqlmap.task("status", task["taskid"])
             if res['status'] != 'running':
-                Logger.info("[scan status: {}]: ID: {}".
+                logging.info("[scan status: {}]: ID: {}".
                             format(res["status"], task["taskid"]))
                 task['status'] = res
                 task['log'] = self.sqlmap.task("log", task["taskid"])
                 task['data'] = self.sqlmap.task("data", task["taskid"])
-                Logger.debug(task["url"])
+                logging.debug(task["url"])
                 self.parse_task(task)
-                # Logger.debug(res)
+                # logging.debug(res)
                 task['log'] = res
                 self.running.remove(task)
 
     def wait_result(self):
         while self.running:
             self.result()
-            Logger.info("{} task still running".format(len(self.running)))
-            # Logger.debug(self.running)
+            logging.info("{} task still running".format(len(self.running)))
+            # logging.debug(self.running)
             time.sleep(3)
         self.sql_report['overview'] = 'Found {} Injections. <br>'.format(len(self.sql_report['entries'])) + \
                                       self.sql_report['overview']
         self.reports.append(self.sql_report)
-        Logger.info("SQLMap Tasks are all finished !")
+        logging.info("SQLMap Tasks are all finished !")
 
     def parse_task(self, task):
         if task['data']['data']:
             self.vulnerable.append(task)
-            Logger.critical('SQL injection found!')
-            Logger.info(task['data'])
+            logging.critical('SQL injection found!')
+            logging.info(task['data'])
             data = task['data']['data']
             entries = []
             for ent in data:
@@ -90,11 +90,11 @@ class SQLMapInjector:
         if 'CRITICAL' in rep:
             if 'all tested parameters do not appear to be injectable.' in rep:
                 # The detection process was error-free but didn't found a SQLi
-                Logger.info('Not appear to be injectable.')
+                logging.info('Not appear to be injectable.')
 
     def flush_all(self):
         self.sqlmap.admin("flush")
-        Logger.debug("SQLMap tasks flushed.")
+        logging.debug("SQLMap tasks flushed.")
 
     def add(self, form):
         options = self.parse_form(form)
@@ -122,14 +122,14 @@ class SQLMapInjector:
             if field['type'] in ('checkbox',):
                 if field['required']:
                     return 'on'
-            Logger.error('Unknown input type {}'.format(field))
+            logging.error('Unknown input type {}'.format(field))
 
         option['randomAgent'] = True
         option['level'] = DEFAULT_LEVEL
         option['url'] = form['url']
         option['method'] = form['method']
         if 'cookie' in self.args:
-            Logger.debug('Cookie Set {}'.format(self.args['cookie']))
+            logging.debug('Cookie Set {}'.format(self.args['cookie']))
             option['cookies'] = self.args['cookie']
         if 'https' in option['url']:
             option['forceSSL'] = True
@@ -141,14 +141,14 @@ class SQLMapInjector:
             else:
                 option['data'] = parse.urlencode(data)
         else:
-            Logger.error("Unimplemented form encoding {} in url {}".format(form['content-type'], option['url']))
+            logging.error("Unimplemented form encoding {} in url {}".format(form['content-type'], option['url']))
         return option
 
     def exec(self):
         self.launch()
-        # Logger.debug('requests: {}'.format(self.results))
+        # logging.debug('requests: {}'.format(self.results))
         for i in self.results['requests']:
             self.add(i)
         self.wait_result()
-        # Logger.debug(report)
+        # logging.debug(report)
 

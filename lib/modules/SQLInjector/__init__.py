@@ -1,7 +1,7 @@
 # coding:utf-8
 import re
 
-from lib.core.Logger import Logger
+import logging
 from .SQLMapInjector import SQLMapInjector
 import requests
 from http.cookies import SimpleCookie
@@ -41,7 +41,7 @@ class SQLInjector:
             'version': '1.0'
         }
 
-    def craft_request(self, form, original = False):
+    def craft_request(self, form, original=False):
 
         if original:
             data = form['data']
@@ -60,14 +60,14 @@ class SQLInjector:
                                              timeout = self.timeout)
             elif form['method'].upper() == 'POST':
                 if form.get("content-type", "application/x-www-form-urlencoded") != "application/x-www-form-urlencoded":
-                    Logger.error('Unknown content-type: {}'.format(form["content-type"]))
+                    logging.error('Unknown content-type: {}'.format(form["content-type"]))
                 response = self._session.post(form['url'],
                                               data=data,
                                               headers=self.headers,
                                               allow_redirects=False,
                                               timeout=self.timeout)
             else:
-                Logger.error('Wired HTTP Method: {}'.format(form['method']))
+                logging.error('Wired HTTP Method: {}'.format(form['method']))
                 response = self._session.request(form['method'], form['url'],
                                                  data=data,
                                                  headers=self.headers,
@@ -79,9 +79,9 @@ class SQLInjector:
             else:
                 raise e
 
-        Logger.debug('request url: ' + str(response.request.method) + ' ' + str(response.request.url))
-        # Logger.debug('request body:' + str(response.request.body))
-        Logger.debug('request headers: ' + str(response.request.headers))
+        logging.debug('request url: ' + str(response.request.method) + ' ' + str(response.request.url))
+        # logging.debug('request body:' + str(response.request.body))
+        logging.debug('request headers: ' + str(response.request.headers))
         return response
 
     def mutate(self, form):
@@ -91,7 +91,7 @@ class SQLInjector:
         for payload in payloads:
             for para in o_data:
                 data = form['data'].copy()
-                # Logger.debug('data copy: {}'.format(data is form['data']))
+                # logging.debug('data copy: {}'.format(data is form['data']))
                 data[para] += payload # add payload rear
                 form['mutated'] = data
                 yield form, para
@@ -185,7 +185,7 @@ class SQLInjector:
         else:
             if self.find_pattern(response):
                 return True
-        Logger.warning('Double check failed in check_sql')
+        logging.warning('Double check failed in check_sql')
         return False
 
     def check_timeout(self, mutated_form):
@@ -221,7 +221,7 @@ class SQLInjector:
             current_parameter = None
             vuln_parameters = set()
 
-            Logger.debug('testing {}'.format(form['url']))
+            logging.debug('testing {}'.format(form['url']))
             for mutated_form, parameter in self.mutate(form):
                 if current_parameter != parameter:
                     current_parameter = parameter
@@ -231,7 +231,7 @@ class SQLInjector:
                 try:
                     response = self.craft_request(mutated_form)
                 except ReadTimeout: # not usual
-                    Logger.warning("[+] timeout on request {}".format(form['url']))
+                    logging.warning("[+] timeout on request {}".format(form['url']))
                     if timeout:
                         continue
                     timeout = True
@@ -242,7 +242,7 @@ class SQLInjector:
                         vuln_parameters.add(parameter)
                     if response.status_code == 500 and not saw_server_error: # server error?
                         saw_server_error = True
-                        Logger.warning("[+] server error on request {}".format(form['url']))
+                        logging.warning("[+] server error on request {}".format(form['url']))
 
             for mutated_form, parameter in self.mutate_blind(form):
                 if current_parameter != parameter:
@@ -254,19 +254,19 @@ class SQLInjector:
                     response = self.craft_request(mutated_form)
                 except ReadTimeout:
                     if self.check_timeout(mutated_form):
-                        Logger.warning("Too much lag from website, can't reliably test time based blind SQLi")
+                        logging.warning("Too much lag from website, can't reliably test time based blind SQLi")
                         break
                     self.report(mutated_form, parameter, "Blind SQL Injection vulnerability", response)
                     vuln_parameters.add(parameter)
                 else:
                     if response.status_code == 500 and not saw_server_error:
                         saw_server_error = True
-                        Logger.warning("[+] server error on request {}".format(form['url']))
+                        logging.warning("[+] server error on request {}".format(form['url']))
 
         self.sql_report['overview'] = 'Found {} Injections. <br>'.format(len(self.sql_report['entries'])) + \
                                       self.sql_report['overview']
         self.reports.append(self.sql_report)
-        Logger.info("SQLInjector Tasks finished !")
+        logging.info("SQLInjector Tasks finished !")
 
 
 def value(field):
@@ -309,13 +309,13 @@ def value(field):
             return field['value'] or 'on'
     if field['type'] in defaults:
         return defaults[field['type']]
-    Logger.error('Unknown input type {}'.format(field))
+    logging.error('Unknown input type {}'.format(field))
     return None
 
 
 def craft_fields(form):
     # request = {"url": url, "cookie": "PHPSESSID=muihhepaqno9bn31mhfrgstk00; security=low"}
-    Logger.debug('form: {}'.format(form))
+    logging.debug('form: {}'.format(form))
     form['data'] = {field['name']: value(field) for field in form['fields'].values() if value(field)}
 
 

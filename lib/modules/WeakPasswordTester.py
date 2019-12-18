@@ -2,6 +2,7 @@
 
 import re
 import random
+import logging
 
 from lib.core.Dictionary import Dictionary
 from lib.exceptions import NoRequestsException
@@ -23,9 +24,12 @@ class WeakPasswordTester:
         }
 
     def exec(self):
+        logging.info('Start to find weak password')
         if 'requests' not in self.results:
+            logging.fatal('There\'s no requests in results')
             raise NoRequestsException
         self.results['weak_passwords'] = []
+        logging.info('Finding potential log in form...')
         for uuid in self.results['requests']:
             request = self.results['requests'][uuid]
             if request['content-type'] == 'text/plain':
@@ -53,6 +57,7 @@ class WeakPasswordTester:
                     password_alias = alias
                     break
             if flag1 and flag2:
+                logging.info('Found potential log in form {}'.format(uuid))
                 dict_username = Dictionary.preset(self.args['root'], 'weak_username')
                 dict_password = Dictionary.preset(self.args['root'], 'weak_password')
 
@@ -80,6 +85,7 @@ class WeakPasswordTester:
 
                 status = []
                 result2xx = result3xx = 0
+                logging.info('Start to test Username-Password pair')
                 for username, password in get_pair():
                     params = {}
                     r = None
@@ -158,6 +164,7 @@ class WeakPasswordTester:
                                     'username': stat['username'],
                                     'password': stat['password']
                                 })
+                logging.info('Test finished')
         self.reports.append({
             'title': 'Weak Passwords',
             'overview': 'Found {} weak password pairs'.format(len(self.results['weak_passwords'])),
