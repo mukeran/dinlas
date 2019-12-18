@@ -59,4 +59,4 @@ class DirectorySearcher:
             'header': ['Path', 'Status Code'],
             'entries': list(map(lambda x: [x['path'], x['status_code']], self.directories))
         })
-        logging.log('Found {} potential hidden web files/paths'.format(len(self.directories)))
+        logging.info('Found {} potential hidden web files/paths'.format(len(self.directories)))

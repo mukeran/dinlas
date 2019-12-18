@@ -2,8 +2,8 @@
 
 import logging
 
-from lib.modules import StaticRequestFinder, SQLInjector, WeakPasswordTester, DirectorySearcher, StoredXSSDetector,\
-    ReflectedXSSDetector
+from lib.modules import StaticRequestFinder, SQLInjector, WeakPasswordTester, DirectorySearcher, StoredXSSDetector, \
+    FileUploadDetector, ReflectedXSSDetector, CSRFDetector, SSTIDetector
 
 
 class Static:
@@ -38,17 +38,23 @@ class Static:
         parser.add_argument('-H', '--headless', action='store_true', help='Using headless browser')
         parser.add_argument('-B', '--browsermobproxy', metavar='Path to browsermobproxy', default='browsermobproxy',
                             help='Specify the path to browswermobproxy')
+        parser.add_argument('--success-regex', default='succes', help='Regex emphasize the successful upload action')
+        parser.add_argument('--upload-path', default='http://localhost/hackable/uploads/', help='Upload path')
 
     @staticmethod
     def modules():
-        return [DirectorySearcher, StaticRequestFinder, SQLInjector, StoredXSSDetector, WeakPasswordTester]
+        return [DirectorySearcher, StaticRequestFinder, SQLInjector, StoredXSSDetector, ReflectedXSSDetector,
+                WeakPasswordTester, CSRFDetector, SSTIDetector, FileUploadDetector]
 
     def exec(self):
         logging.info('Start to scan static website {}'.format(self.args['url']))
-        # DirectorySearcher(self.results, self.reports, **self.args).exec()
+        DirectorySearcher(self.results, self.reports, **self.args).exec()
         StaticRequestFinder(self.results, **self.args).exec()
-        # SQLInjector(self.results, self.reports, **self.args).exec()
+        SQLInjector(self.results, self.reports, **self.args).exec()
         StoredXSSDetector(self.results, self.reports, **self.args).exec()
         ReflectedXSSDetector(self.results, self.reports, **self.args).exec()
         WeakPasswordTester(self.results, self.reports, **self.args).exec()
+        CSRFDetector(self.results, self.reports, **self.args).exec()
+        SSTIDetector(self.results, self.reports, **self.args).exec()
+        FileUploadDetector(self.results, self.reports, **self.args).exec()
         logging.info('Scan procedure finished')

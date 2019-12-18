@@ -3,7 +3,7 @@ from .DirectorySearcher import DirectorySearcher
 from .DynamicRequestFinder import DynamicRequestFinder
 from .SQLInjector import SQLInjector
 from .StaticRequestFinder import StaticRequestFinder
-from .SSTIDetector import TemplateInjector
+from .SSTIDetector import SSTIDetector
 from .WeakPasswordTester import WeakPasswordTester
 from .StoredXSSDetector import StoredXSSDetector
 from .ReflectedXSSDetector import ReflectedXSSDetector

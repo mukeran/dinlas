@@ -8,10 +8,6 @@ from urllib import parse
 from requests.exceptions import ConnectionError, ReadTimeout, RequestException
 import logging
 
-from .SQLMapInjector import SQLMapInjector
-
-USE_SQLMAP = False
-
 
 def mutate(form):
     o_data = form['data']
@@ -85,7 +81,8 @@ class SQLInjector:
                                              timeout=self.timeout)
             elif form['method'].upper() == 'POST':
                 if form.get("content-type", "application/x-www-form-urlencoded") != "application/x-www-form-urlencoded":
-                    logging.info('skip enctype: {}'.format(form["content-type"]))
+                    # logging.info('skip enctype: {}'.format(form["content-type"]))
+                    pass
                 response = self._session.post(form['url'],
                                               data=data,
                                               headers=self.headers,
@@ -215,10 +212,6 @@ class SQLInjector:
         self.sql_report['entries'].append([url, method, parameter, type_, payload])
 
     def exec(self):
-        if USE_SQLMAP:
-            smi = SQLMapInjector(self.results, self.reports, **self.args)
-            smi.exec()
-            return
         for form in self.results['requests'].values():
             craft_fields(form)
             timeout = 0

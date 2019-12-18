@@ -1,11 +1,6 @@
 admin
-admin'--
-admin' or ''=''--
-admin' or 1=1--
-'or 1=1--
 admins
-base
-admin'or''='
+bas
 user
 root
 ceshi
@@ -18,8 +13,6 @@ test1
 test2
 test123
 user123
-'or'='or'
-'or''='
 adm
 1
 2
@@ -2270,7 +2263,6 @@ cyrill
 cyrille
 cyrillus
 cyrus
-d'arcy
 dacey
 dacia
 dacie

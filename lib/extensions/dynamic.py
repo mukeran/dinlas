@@ -4,7 +4,7 @@
 import logging
 
 from lib.modules.DynamicRequestFinder import DynamicRequestFinder
-from lib.modules.SQLInjector import SQLInjector
+from lib.modules import SQLInjector
 
 
 class Dynamic:

@@ -1,11 +1,11 @@
 # coding:utf-8
 
-from lib.core.Logger import Logger
+import logging
 from urllib import parse
 from copy import deepcopy
+import random
 
 import requests
-import random
 
 
 class SSTIDetector:
@@ -22,28 +22,25 @@ class SSTIDetector:
             'version': '1.0'
         }
 
+    @staticmethod
+    def set_payload():
+        randint1 = random.randint(32768, 65536)
+        randint2 = random.randint(16384, 32768)
+
+        _sum = randint1 + randint2
+
+        _payload = '{{' + str(randint1) + '+' + str(randint2) + '}}'
+        check_str = str(_sum)
+        return {'payload': _payload, 'check_str': check_str}
+
     def exec(self):
-        def set_payload():
-            randint1 = random.randint(32768, 65536)
-            randint2 = random.randint(16384, 32768)
-
-            _sum = randint1 + randint2
-
-            _payload = '{{' + str(randint1) + '+' + str(randint2) + '}}'
-            check_str = str(_sum)
-            return {'payload': _payload, 'check_str': check_str}
-
-        header = {
+        headers = {
             'User_Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.'
                           '2924.87 Safari/537.36'
         }
-
-        raw_url = self.results['url']
-
-        for url in raw_url:
-            check = set()
+        for url in self.results['urls']:
+            logging.critical('SSTI testing on {}'.format(url))
             attack_url = []
-
             if url[0:4] != 'http':
                 url = 'http://' + url
             parse_result = parse.urlparse(url)
@@ -53,22 +50,16 @@ class SSTIDetector:
             _url = parse_result.scheme + '://' + parse_result.netloc
 
             for i in range(1, len(split_dir)):
-                payload = set_payload()
-                former = '/'.join(split_dir[0:i])
-                latter = '/'.join(split_dir[i+1:])
-                check_url = _url + former + latter
-                if check_url in check:
-                    continue
-                check.add(check_url)
-                _url += former + '/' + payload['payload']
-                if latter != '':
-                    _url += '/' + latter
-                attack_url.append({'url': _url, 'payload': payload})
+                payload = self.set_payload()
+                split = deepcopy(split_dir)
+                split[i] = payload['payload']
+                check_url = _url + '/'.join(split)
+                attack_url.append({'url': check_url, 'payload': payload})
 
             _url += parse_result.path + '?'
 
             for key in query.keys():
-                payload = set_payload()
+                payload = self.set_payload()
                 tmp = deepcopy(query)
                 tmp[key][0] = payload['payload']
                 _query = []
@@ -76,24 +67,19 @@ class SSTIDetector:
                     _query += list(map(lambda x: '{}={}'.format(_key, x), _value))
                 attack_url.append({'url': _url + '&'.join(_query), 'payload': payload})
 
-            if attack_url.len() == 0:
-                Logger.critical('SSTI Not Detected: No vulnerable url')
-
             for test_url in attack_url:
-                req = requests.get(test_url, header=header)
+                req = requests.get(test_url['url'], headers=headers)
                 if req.text.find(test_url['payload']['check_str']) != -1:
-                    Logger.critical('SSTI Detected: vulnerable url: {}'.format(test_url))
+                    logging.critical('SSTI detected: vulnerable url: {}'.format(test_url['url']))
                     self.vulnerable.append({
                         'url': test_url['url'],
                         'payload': test_url['payload']['payload']
                     })
 
-            self.reports.append({
-                'title': 'Server Side Template Injection Points',
-                'overview': 'Found {} SSTI point(s)'.format(len(self.results)),
-                'header': ['Path', 'Payload'],
-                'entries': list(map(lambda x: [x['url'], x['payload']], self.vulnerable))
-            })
-            Logger.info("SSTI scan finished!")
-
-        pass
+        self.reports.append({
+            'title': 'Server Side Template Injection Points',
+            'overview': 'Found {} SSTI point(s)'.format(len(self.vulnerable)),
+            'header': ['Path', 'Payload'],
+            'entries': list(map(lambda x: [x['url'], x['payload']], self.vulnerable))
+        })
+        logging.info("SSTI scan finished!")
