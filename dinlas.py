@@ -5,6 +5,9 @@ import os
 
 from lib.core import ArgumentParser, Controller
 
+import coloredlogs
+coloredlogs.install(fmt='[%(asctime)s][%(filename)s][%(process)d][%(levelname)s] %(message)s')
+
 VERSION = '1.0.0'
 
 

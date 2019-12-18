@@ -2,6 +2,7 @@
 
 import os
 import time
+import logging
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -15,8 +16,8 @@ class Reporter:
         self.jinja = Environment(loader=FileSystemLoader(os.path.join(self.args['root'], 'templates')))
 
     def generate(self):
+        logging.info('Generating report...')
         generate_time = time.localtime()
-        print(self.reports)
         template = self.jinja.get_template('default.jinja2')
         filename = 'report-{}-{}.html'.format(time.strftime('%Y-%m-%d', generate_time),
                                               int(time.time()))
@@ -29,4 +30,4 @@ class Reporter:
         with open(path, 'w') as f:
             f.write(template.render(date=time.asctime(), extension=self.args['extension'],
                                     version=VERSION, reports=self.reports))
-        print('The report has been generated at {}'.format(path))
+        logging.info('The report has been generated. Path: {}'.format(path))

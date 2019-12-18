@@ -1,6 +1,8 @@
 # coding:utf-8
 # Please notice that this extension is not finished!!!
 
+import logging
+
 from lib.modules.DynamicRequestFinder import DynamicRequestFinder
 from lib.modules.SQLInjector import SQLInjector
 
@@ -31,6 +33,6 @@ class Dynamic:
                             help='Specify the path to browswermobproxy')
 
     def exec(self):
-        print('The extension you selected is not finished.')
+        logging.warning('The extension you selected is not finished.')
         DynamicRequestFinder(**self.args).exec()
         SQLInjector(**self.args).exec()

@@ -1,5 +1,7 @@
 # coding:utf-8
 
+import logging
+
 
 class Default:
     def __init__(self, **kwargs):
@@ -23,4 +25,4 @@ class Default:
         pass
 
     def exec(self):
-        pass
+        logging.warning('The extension you selected is not finished.')

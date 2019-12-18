@@ -1,6 +1,7 @@
 # coding:utf-8
 
 import logging
+
 from requests_html import HTMLSession
 from urllib.parse import urljoin, urlencode
 from http.cookies import SimpleCookie
@@ -255,7 +256,6 @@ class CSRFDetector:
                                        self.csrf_report['overview']
         self.reports.append(self.csrf_report)
         logging.info("CSRF scan finished !")
-
 
 def value(field):
     """

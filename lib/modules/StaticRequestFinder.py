@@ -2,6 +2,7 @@
 
 from queue import SimpleQueue
 from urllib.parse import urljoin
+import logging
 
 from lib.utils.random import randuuid
 
@@ -28,6 +29,7 @@ class StaticRequestFinder:
         }
 
     def exec(self):
+        logging.info('Start to find requests')
         visited = set()
         session = HTMLSession()
         queue = SimpleQueue()
@@ -39,7 +41,7 @@ class StaticRequestFinder:
             if count > self.args['max_page_count']:
                 break
             url = queue.get_nowait()
-            print(url)
+            logging.info('Request on {}'.format(url))
             r = session.get(url, cookies=self.cookies)
             links = r.html.absolute_links
             for link in links:
@@ -62,7 +64,8 @@ class StaticRequestFinder:
                     'method': form.attrs['method'].upper() if 'method' in form.attrs else 'GET',
                     'content-type': form.attrs['enctype'] if 'enctype' in form.attrs else
                     'application/x-www-form-urlencoded',
-                    'fields': {}
+                    'fields': {},
+                    'form': form
                 }
                 inputs = form.find('input')
                 for inp in inputs:
@@ -130,6 +133,8 @@ class StaticRequestFinder:
                         'required': required,
                         'values': values
                     }
+                logging.info('Found form {}'.format(request['uuid']))
                 self.requests[request['uuid']] = request
         self.results['requests'] = self.requests
         self.results['urls'] = list(visited)
+        logging.info('Found {} forms'.format(len(self.results['requests'])))

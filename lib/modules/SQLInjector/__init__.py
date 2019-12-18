@@ -1,6 +1,8 @@
 # coding:utf-8
 
-import requests, re, time
+import requests
+import re
+import time
 from http.cookies import SimpleCookie
 from urllib import parse
 from requests.exceptions import ConnectionError, ReadTimeout, RequestException

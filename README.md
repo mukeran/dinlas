@@ -19,14 +19,14 @@ But you have to pay attention that this is a project for a course.
 │   │   ├── ArgumentParser.py - Command line parser
 │   │   ├── Controller.py - Main controller
 │   │   ├── __init__.py
-│   │   ├── Logger.py - Console logger
+│   │   ├── logging.py - Console logger
 │   │   ├── ModuleLoader.py - Module loader
 │   │   └── Reporter.py - Reporter generator
 │   ├── extensions - Scan extensions
 │   │   ├── ArgumentParser.py - Command line parser
 │   │   ├── Controller.py - Main controller
 │   │   ├── __init__.py
-│   │   ├── Logger.py - Console logger
+│   │   ├── logging.py - Console logger
 │   │   ├── ModuleLoader.py - Module loader
 │   │   └── Reporter.py - Reporter generator
 │   └── utils - Program utils or common modules
