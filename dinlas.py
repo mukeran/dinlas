@@ -25,4 +25,6 @@ class Dinlas:
 
 if __name__ == '__main__':
     root = os.path.dirname(__file__)
+    if len(root) == 0:
+        root = '.'
     Dinlas(root)
