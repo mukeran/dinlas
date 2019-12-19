@@ -66,10 +66,10 @@ But you have to pay attention that this is a project for a course.
 When you finished downloading the [release](), you have to do some preparations below:
 
 1. Install Python 3.8 and pip 19 or above;
-2. Run `pip install -r requestments.txt`;
+2. Run `pip install -r requirements.txt`;
 3. Download Google Chrome and its [Chrome Driver](https://chromedriver.chromium.org/);
 4. Download [browsermob-proxy](https://github.com/lightbody/browsermob-proxy);
 5. Extract browsermob-proxy and Chrome Driver into a PATH path.
 
-Now you can run ./dinlas.py static \<your_url\>.
+Now you can run ./dinlas.py start static \<your_url\>.
 

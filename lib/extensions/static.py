@@ -36,7 +36,7 @@ class Static:
         parser.add_argument('--random', action='store_true', help='if randomly test password or not')
         parser.add_argument('--username', help='set test username')
         parser.add_argument('-H', '--headless', action='store_true', help='Using headless browser')
-        parser.add_argument('-B', '--browsermobproxy', metavar='Path to browsermobproxy', default='browsermobproxy',
+        parser.add_argument('-B', '--browsermobproxy', metavar='Path to browsermobproxy', default='browsermob-proxy',
                             help='Specify the path to browswermobproxy')
         parser.add_argument('--success-regex', default='succes', help='Regex emphasize the successful upload action')
         parser.add_argument('--upload-path', default='http://localhost/hackable/uploads/', help='Upload path')
